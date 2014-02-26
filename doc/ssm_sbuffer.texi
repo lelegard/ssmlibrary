@@ -1,0 +1,401 @@
+@node Static memory buffers
+@chapter Static memory buffers
+
+@section Static memory buffers overview
+
+A static memory buffer is declared with a static maximum size, just like a
+regular C array. It can contain up to that number of bytes. A static buffer
+is a fast low-level type without any sort of memory allocation. The storage
+for the buffer data is reserved within the variable, like C arrays.
+
+A static memory buffer also has a @emph{current size} (or @emph{length}) which indicates
+the number of usable bytes in the buffer, meaning the number of bytes which were
+actually written into it by user code.
+
+A static buffer is a polymorphic object which is formally defined by the abstract
+type @code{ssm_sbuffer_t}. In that case, @emph{abstract} means that pointers
+to existing objects of this type can be used but no object shall be defined using
+this type name.
+
+This is why a static memory buffer should be declared by the macro
+@code{ssm_sbuffer_declare()}. This macro ensures that the correct amount of storage
+is reserved and the variable is properly initialized to an empty buffer.
+
+The following example defines a static memory buffer named @code{foo} with a maximum
+capacity of 50 bytes:
+
+@example
+ssm_sbuffer_declare (foo, 50);
+@end example
+
+In practice, a variable which is defined by the macro @code{ssm_sbuffer_declare()}
+has no named type. It is only specified that it contains a field named @code{buf}
+which is of type @code{ssm_sbuffer_t}. Thus, the actual
+@code{ssm_sbuffer_t} is in fact @code{foo.buf}. Example:
+
+@example
+ssm_sbuffer_declare (foo, 10);
+ssm_sbuffer_import (&foo.buf, &someData, sizeof(someData));
+size_t len = ssm_sbuffer_length (&foo.buf);
+@end example
+
+Note that, unlike C++, the C language does not forbid the definition of objects of
+an abstract type (the concept of @emph{abstract type} does not even exist in C). So the
+following code compiles but it is incorrect: the variable is uninitialized and no
+storage is reserved for the buffer data.
+
+SO, DO NOT USE THIS:
+
+@example
+ssm_sbuffer_t foo;
+@end example
+
+@section Creating static buffers
+
+@ssmdef ssm_sbuffer_t
+Abstract definition of a static buffer.
+
+@cartouche
+@example
+typedef ... ssm_sbuffer_t;
+@end example
+@end cartouche
+
+No object of this type shall be defined.
+To define an actual static buffer, use the macro @code{ssm_sbuffer_declare()}.
+See the section ``Static buffers overview'' above for more details on the usage
+of static buffers.
+
+Correct example:
+
+@example
+ssm_sbuffer_declare (b, 10);
+
+ssm_sbuffer_import (&b.buf, &someData, sizeof(someData));
+size_t len = ssm_sbuffer_length (&b.buf);
+myFunc (&b.buf);
+@end example
+
+Incorrect example, DO NOT USE:
+@example
+ssm_sbuffer_t b;
+@end example
+
+Pointer to the type @code{ssm_sbuffer_t} may be used as function parameters.
+Example:
+
+@example
+void myFunc (const ssm_sbuffer_t* b) @{
+    size_t len = ssm_sbuffer_length (b);
+    ...
+@}
+@end example
+
+@ssmdef ssm_sbuffer_declare
+Declare a @code{ssm_sbuffer_t} variable.
+
+@cartouche
+@example
+#define ssm_sbuffer_declare(variable,size) \
+    ssm_sbuffer_struct(size) variable = ssm_sbuffer_init(size)
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .85
+@headitem Parameter @tab Description
+@item @var{variable} @tab Name of the variable to declare.
+The variable is safely initialized to an empty buffer.
+@item @var{size} @tab Maximum number of bytes in the buffer.
+Shall be a compile-time constant, unless the compiler accepts
+variable-length arrays. If the compiler accepts such
+runtime sizes, @var{size} shall be an idempotent expression
+(ie. its result shall yield the same value for each evaluation
+and it shall have no side effect).
+@end multitable
+
+This macro declares a @code{ssm_sbuffer_t} variable.
+
+In practice, @var{variable} has no named type. It is only
+specified that it contains a field named @code{buf} which is of
+type @code{ssm_sbuffer_t}. Thus, the actual @code{ssm_sbuffer_t}
+is in fact @code{variable.buf}.
+
+For syntactic reasons, this macro cannot be used when the @code{ssm_sbuffer_t}
+is not a single variable but part of a structure for instance. In that case,
+use the macros @code{ssm_sbuffer_struct()} and @code{ssm_sbuffer_init()}.
+
+@ssmdef ssm_sbuffer_struct
+Declare an uninitialized @code{ssm_sbuffer_t} field.
+
+@cartouche
+@example
+#define ssm_sbuffer_struct(size) ...
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .85
+@headitem Parameter @tab Description
+@item @var{size} @tab Maximum number of bytes in the buffer.
+Shall be a compile-time constant, unless the compiler accepts variable-length arrays.
+@end multitable
+
+This macro declares an uninitialized @code{ssm_sbuffer_t} field.
+
+When declaring a simple @code{ssm_sbuffer_t} variable, use the macro
+@code{ssm_sbuffer_declare()} instead. The macro @code{ssm_sbuffer_struct()}
+shall be reserved for contexts where it is not possible to initialize
+the data, such as in the case of a field within a structure. Be sure
+to initialize the corresponding data using the macro @code{ssm_sbuffer_init()}
+with @strong{exactly the same size value}.
+
+Example:
+@example
+typedef struct @{
+    int before;
+    ssm_sbuffer_struct(50) buf;
+    int after;
+@} my_struct_t;
+
+my_struct_t a = @{
+    .before = 0x1234567,
+    .buf = ssm_sbuffer_init(50),
+    .after = 0x1ABCDEF
+@};
+@end example
+
+@ssmdef ssm_sbuffer_init
+Initializer for a @code{ssm_sbuffer_t} field.
+
+@cartouche
+@example
+#define ssm_sbuffer_init(size) ...
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .85
+@headitem Parameter @tab Description
+@item @var{size} @tab Maximum number of bytes in the buffer.
+Shall be a compile-time constant, unless the compiler accepts variable-length arrays.
+Shall be exactly the same value as used in the corresponding @code{ssm_sbuffer_struct()} macro.
+@end multitable
+
+This macro returns the initializer for a @code{ssm_sbuffer_t} field.
+
+See the macro @code{ssm_sbuffer_struct()} for an example.
+
+When declaring a simple @code{ssm_sbuffer_t} variable, use the macro
+@code{ssm_sbuffer_declare()} instead.
+
+@section Manipulating static buffers
+
+@ssmdef ssm_sbuffer_import
+Copy ("import") a memory area into a @code{ssm_sbuffer_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_sbuffer_import (ssm_sbuffer_t* @var{dest},
+                                 const void* @var{src},
+                                 size_t @var{maxSize});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab Buffer to fill.
+@item @var{src} @tab in @tab Address of a memory buffer. Can be @code{NULL} (same as empty buffer).
+@item @var{maxSize} @tab in @tab Maximum number of bytes to copy from @var{src}.
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_sbuffer_data
+Read-only access to a @code{ssm_sbuffer_t} binary content.
+
+@cartouche
+@example
+const void* ssm_sbuffer_data (const ssm_sbuffer_t* @var{buf});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in @tab The static buffer to read.
+@item @tab return @tab The address of the buffer binary content.
+The application is not allowed to modify this buffer.
+@end multitable
+
+@ssmdef ssm_sbuffer_length
+Get the length of a @code{ssm_sbuffer_t} content.
+
+@cartouche
+@example
+size_t ssm_sbuffer_length (const ssm_sbuffer_t* @var{buf});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in @tab The static buffer to read.
+@item @tab return @tab The used length of the buffer.
+In case of null @var{src} or detected memory corruption, return zero.
+@end multitable
+
+@ssmdef ssm_sbuffer_max_length
+Get the maximum data size that can be held in a @code{ssm_sbuffer_t}.
+
+@cartouche
+@example
+size_t ssm_sbuffer_max_length (const ssm_sbuffer_t* @var{buf});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in @tab The static buffer to read.
+@item @tab return @tab The maximum number of bytes that can be held in the buffer object.
+In case of null @var{src} or detected memory corruption, return zero.
+@end multitable
+
+@ssmdef ssm_sbuffer_resize
+Resize a @code{ssm_sbuffer_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_sbuffer_resize (ssm_sbuffer_t* @var{buf}, size_t @var{length});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in,out @tab The static buffer to resize.
+@item @var{length} @tab in @tab New length of the static buffer.
+If larger than the maximum size of the buffer, the buffer is resized
+to its maximum length and @code{SSM_TRUNCATED} is returned.
+@item @tab return @tab A status value.
+@end multitable
+
+The content of the buffer is resized to the specified length.
+If the new length is longer than the previous length, the
+binary content of the buffer after the previous content is undefined.
+If the new length is shorter than the previous length, the
+buffer content is truncated and the returned status is @code{SSM_OK}.
+
+@ssmdef ssm_sbuffer_set
+Set all bytes in a @code{ssm_sbuffer_t} to a given value.
+
+@cartouche
+@example
+ssm_status_t ssm_sbuffer_set (ssm_sbuffer_t* @var{buf}, uint8_t @var{value});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in,out @tab The static buffer to update.
+@item @var{value} @tab in @tab Value to set in all bytes in the buffer.
+@item @tab return @tab A status value.
+@end multitable
+
+All bytes inside the buffer are updated with the same common value.
+The size of the buffer is unchanged.
+
+@ssmdef ssm_sbuffer_set_range
+Set a range of bytes in a @code{ssm_sbuffer_t} to a given value.
+
+@cartouche
+@example
+ssm_status_t ssm_sbuffer_set_range (ssm_sbuffer_t* @var{buf},
+                                    size_t @var{start},
+                                    size_t @var{length},
+                                    uint8_t @var{value});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in,out @tab The static buffer to update.
+@item @var{start} @tab in @tab Starting index in the buffer of the area to modify.
+@item @var{length} @tab in @tab Length in bytes of the area to modify.
+@item @var{value} @tab in @tab Value to set in all bytes in the area to modify.
+@item @tab return @tab A status value.
+@end multitable
+
+All bytes inside a specified range in the buffer are updated with the same common value.
+The size of the buffer is unchanged.
+
+If the specified range is partially or entirely outside the current buffer size,
+the part of the range which is inside the buffer is updated and @code{SSM_TRUNCATED} is returned.
+
+@ssmdef ssm_sbuffer_copy
+Copy the content of a @code{ssm_sbuffer_t} into another one.
+
+@cartouche
+@example
+ssm_status_t ssm_sbuffer_copy (ssm_sbuffer_t* @var{dest}, const ssm_sbuffer_t* @var{src});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab Receive a copy of the static buffer @var{src}.
+@item @var{src} @tab in @tab Source static buffer. Can be @code{NULL} (same as empty buffer).
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_sbuffer_concat
+Append the content of a @code{ssm_sbuffer_t} at the end of another one.
+
+@cartouche
+@example
+ssm_status_t ssm_sbuffer_concat (ssm_sbuffer_t* @var{dest}, const ssm_sbuffer_t* @var{src});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab in,out @tab Receive a copy of the static buffer @var{src} at end of previous value.
+@item @var{src} @tab in @tab Source static buffer. Can be @code{NULL} (same as empty buffer).
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_sbuffer_compare
+Compare the content of two @code{ssm_sbuffer_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_sbuffer_compare (const ssm_sbuffer_t* @var{buf1},
+                                  const ssm_sbuffer_t* @var{buf2});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf1} @tab in @tab First buffer to compare. Can be @code{NULL} (same as empty buffer).
+@item @var{buf2} @tab in @tab Second buffer to compare. Can be @code{NULL} (same as empty buffer).
+@item @tab return @tab A status value, @code{SSM_GREATER}, @code{SSM_EQUAL} or @code{SSM_LOWER}
+according to whether the first buffer is greater than, equal to or less than
+the second buffer. Can also be an error code.
+@end multitable
+
+@cartouche
+@example
+ssm_status_t ssm_sbuffer_insert (ssm_sbuffer_t* @var{buf},
+                                 size_t @var{start},
+                                 size_t @var{length});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in,out @tab The buffer to modify.
+@item @var{start} @tab in @tab Index in the buffer where to insert a ``hole''.
+@item @var{length} @tab in @tab Size of the ``hole''.
+@item @tab return @tab A status value.
+@end multitable
+
+The content size of the buffer is increased by @var{length} bytes.
+All bytes in the buffer starting at index @var{start} are moved @var{length} bytes upward.
+The previous content of the buffer in the created ``hole'' is left unmodified.
+If the new size of the buffer would exceed its maximum size, it truncated
+to its maximum size and @code{SSM_TRUNCATED} is returned.
+If @var{start} is greater than the current buffer size, the buffer is
+unmodified and @code{SSM_INDEXRANGE} is returned.

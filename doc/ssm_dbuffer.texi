@@ -1,0 +1,388 @@
+@node Dynamic memory buffers
+@chapter Dynamic memory buffers
+
+@section Dynamic memory buffers overview
+
+A dynamic memory buffer uses dynamic memory allocation to store the content.
+
+See @ref{Dynamic memory management}
+for more details on the implementation of memory allocation.
+
+A dynamic memory buffer is defined by the type @code{ssm_dbuffer_t}.
+Since a dynamic memory buffer points to allocated memory, it is essential that
+any such object is properly initialized. This is why a dynamic memory buffer
+should be declared by the macro @code{ssm_dbuffer_declare()}. This macro ensures
+that the variable is properly initialized to an empty buffer.
+
+The following example defines a dynamic memory buffer named @code{foo}:
+
+@example
+ssm_dbuffer_declare (foo);
+
+ssm_dbuffer_import (&foo, &someData, sizeof(someData));
+size_t len = ssm_dbuffer_length (&foo);
+@end example
+
+Note that, unlike C++, the C language does not have any @emph{constructor} mechanism
+providing a guaranteed initial content to an object. Using a uninitialized
+dynamic buffer object may lead to crash or other unexpected behavior. So the
+following code compiles but it is incorrect: the variable is uninitialized
+and may point to invalid data.
+
+SO, DO NOT USE THIS:
+
+@example
+ssm_dbuffer_t foo;
+@end example
+
+To avoid memory leaks, it is essential that any dynamic buffer object is
+freeed before the object goes out of scope. Use the function @code{ssm_dbuffer_free()}
+as illustrated below:
+
+@example
+void f(void)
+@{
+    ssm_dbuffer_declare (foo);
+    ...
+    ssm_dbuffer_free (&foo);
+@}
+@end example
+
+Pay attention to @emph{early return paths} which could lead to memory leaks as
+in the following example:
+
+@example
+void f(void)
+@{
+    ssm_dbuffer_declare (foo);
+    ...
+    if (some_condition) @{
+        /* MEMORY LEAK HERE */
+        return;
+    @}
+    ...
+    ssm_dbuffer_free (&foo);
+@}
+@end example
+
+@section Creating and destroying dynamic buffers
+
+@ssmdef ssm_dbuffer_t
+Definition of a dynamic buffer.
+
+@cartouche
+@example
+typedef ... ssm_dbuffer_t;
+@end example
+@end cartouche
+
+To define an actual dynamic buffer, use the macro @code{ssm_dbuffer_declare()}.
+See the section ``Dynamic buffers overview'' above for more details on the usage
+of dynamic buffers.
+
+Correct example:
+
+@example
+ssm_dbuffer_declare (b);
+
+ssm_dbuffer_import (&b, &someData, sizeof(someData));
+size_t len = ssm_dbuffer_length (&b);
+@end example
+
+Incorrect example, the object is not properly initialized. DO NOT USE:
+
+@example
+ssm_dbuffer_t b;
+@end example
+
+@ssmdef ssm_dbuffer_declare
+Declare a @code{ssm_dbuffer_t} variable.
+
+@cartouche
+@example
+#define ssm_dbuffer_declare(variable) \
+    ssm_dbuffer_t variable = ssm_dbuffer_init
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .85
+@headitem Parameter @tab Description
+@item @var{variable} @tab Name of the variable to declare.
+The variable is safely initialized to an empty buffer.
+@end multitable
+
+This macro declares a @code{ssm_dbuffer_t} variable.
+
+For syntactic reasons, this macro cannot be used when the @code{ssm_dbuffer_t}
+is not a single variable but part of a structure for instance. In that case,
+use the macro @code{ssm_dbuffer_init()} to initialize the @code{ssm_dbuffer_t} field.
+
+@ssmdef ssm_dbuffer_init
+Initializer for a @code{ssm_dbuffer_t} field.
+
+@cartouche
+@example
+#define ssm_dbuffer_init(size) ...
+@end example
+@end cartouche
+
+This macro returns the initializer for a @code{ssm_dbuffer_t} field.
+
+When declaring a simple @code{ssm_dbuffer_t} variable, use the macro
+@code{ssm_dbuffer_declare()} instead. The macro @code{ssm_dbuffer_init}
+shall be reserved for contexts where it is not possible to initialize
+the data, such as in the case of a field within a structure. Be sure
+to initialize the corresponding data using the macro @code{ssm_dbuffer_init}.
+
+Example:
+@example
+typedef struct @{
+    int before;
+    ssm_dbuffer_t str;
+    int after;
+@} my_struct_t;
+
+my_struct_t a = @{
+    .before = 0x1234567,
+    .str = ssm_dbuffer_init,
+    .after = 0x1ABCDEF
+@};
+@end example
+
+@ssmdef ssm_dbuffer_free
+Free a @code{ssm_dbuffer_t} dynamic buffer.
+
+@cartouche
+@example
+ssm_status_t ssm_dbuffer_free (ssm_dbuffer_t* buf);
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in,out @tab Dynamic buffer to free.
+@item @tab return @tab A status code.
+@end multitable
+
+This function frees a @code{ssm_dbuffer_t}.
+
+Upon return, the object is still valid but has the semantic of an
+empty buffer and has no longer any dynamic storage associated with it.
+
+@section Manipulating dynamic buffers
+
+@ssmdef ssm_dbuffer_import
+Copy ("import") a memory area into a @code{ssm_dbuffer_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_dbuffer_import (ssm_dbuffer_t* @var{dest},
+                                 const void* @var{src},
+                                 size_t @var{maxSize});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab Buffer to fill.
+@item @var{src} @tab in @tab Address of a memory buffer. Can be @code{NULL} (same as empty buffer).
+@item @var{maxSize} @tab in @tab Maximum number of bytes to copy from @var{src}.
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_dbuffer_data
+Read-only access to a @code{ssm_dbuffer_t} binary content.
+
+@cartouche
+@example
+const void* ssm_dbuffer_data (const ssm_dbuffer_t* @var{buf});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in @tab The dynamic buffer to read.
+@item @tab return @tab The current address of the buffer binary content.
+The application is not allowed to modify this buffer.
+@end multitable
+
+Warning: The returned address is valid only as long as @code{buf} is not modified.
+Since this function is quite fast, it is recommended to @strong{not} store the returned
+value and invoke the function each time the address is needed.
+
+Good example:
+
+@example
+dump (ssm_dbuffer_data (&buf));
+ssm_dbuffer_import (&buf, &someData, sizeof(someData));
+dump (ssm_dbuffer_data (&buf));
+@end example
+
+Bad example, DO NOT DO THIS:
+
+@example
+const void* data = ssm_dbuffer_data (&buf);
+dump (data);
+ssm_dbuffer_import (&buf, &someData, sizeof(someData));
+dump (data);  /* WRONG, 'data' may no longer point to 'buf' content */
+@end example
+
+@ssmdef ssm_dbuffer_length
+Get the length of a @code{ssm_dbuffer_t} content.
+
+@cartouche
+@example
+size_t ssm_dbuffer_length (const ssm_dbuffer_t* @var{buf});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in @tab The dynamic buffer to read.
+@item @tab return @tab The used length of the buffer.
+In case of null @var{src} or detected memory corruption, return zero.
+@end multitable
+
+@ssmdef ssm_dbuffer_resize
+Resize a @code{ssm_dbuffer_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_dbuffer_resize (ssm_dbuffer_t* @var{buf}, size_t @var{length});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in,out @tab The dynamic buffer to resize.
+@item @var{length} @tab in @tab New length of the dynamic buffer.
+@item @tab return @tab A status value.
+@end multitable
+
+The content of the buffer is resized to the specified length.
+If the new length is longer than the previous length, the
+binary content of the buffer after the previous content is undefined.
+If the new length is shorter than the previous length, the
+buffer content is truncated and the returned status is @code{SSM_OK}.
+
+@ssmdef ssm_dbuffer_set
+Set all bytes in a @code{ssm_dbuffer_t} to a given value.
+
+@cartouche
+@example
+ssm_status_t ssm_dbuffer_set (ssm_dbuffer_t* @var{buf}, uint8_t @var{value});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in,out @tab The dynamic buffer to update.
+@item @var{value} @tab in @tab Value to set in all bytes in the buffer.
+@item @tab return @tab A status value.
+@end multitable
+
+All bytes inside the buffer are updated with the same common value.
+The size of the buffer is unchanged.
+
+@ssmdef ssm_dbuffer_set_range
+Set a range of bytes in a @code{ssm_dbuffer_t} to a given value.
+
+@cartouche
+@example
+ssm_status_t ssm_dbuffer_set_range (ssm_dbuffer_t* @var{buf},
+                                    size_t @var{start},
+                                    size_t @var{length},
+                                    uint8_t @var{value});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in,out @tab The dynamic buffer to update.
+@item @var{start} @tab in @tab Starting index in the buffer of the area to modify.
+@item @var{length} @tab in @tab Length in bytes of the area to modify.
+@item @var{value} @tab in @tab Value to set in all bytes in the area to modify.
+@item @tab return @tab A status value.
+@end multitable
+
+All bytes inside a specified range in the buffer are updated with the same common value.
+The size of the buffer is unchanged.
+
+If the specified range is partially or entirely outside the current buffer size,
+the part of the range which is inside the buffer is updated and @code{SSM_TRUNCATED} is returned.
+
+@ssmdef ssm_dbuffer_copy
+Copy the content of a @code{ssm_dbuffer_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_dbuffer_copy (ssm_dbuffer_t* @var{dest}, const ssm_dbuffer_t* @var{src});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab Receive a copy of the dynamic buffer @var{src}.
+@item @var{src} @tab in @tab Source dynamic buffer. Can be @code{NULL} (same as empty buffer).
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_dbuffer_concat
+Append the content of a ssm_dbuffer_t at the end of another one.
+
+@cartouche
+@example
+ssm_status_t ssm_dbuffer_concat (ssm_dbuffer_t* @var{dest}, const ssm_dbuffer_t* @var{src});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab in,out @tab Receive a copy of the dynamic buffer @var{src} at end of previous value.
+@item @var{src} @tab in @tab Source dynamic buffer. Can be @code{NULL} (same as empty buffer).
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_dbuffer_compare
+Compare the content of two @code{ssm_dbuffer_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_dbuffer_compare (const ssm_dbuffer_t* @var{buf1},
+                                  const ssm_dbuffer_t* @var{buf2});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf1} @tab in @tab First buffer to compare. Can be @code{NULL} (same as empty buffer).
+@item @var{buf2} @tab in @tab Second buffer to compare. Can be @code{NULL} (same as empty buffer).
+@item @tab return @tab A status value, @code{SSM_GREATER}, @code{SSM_EQUAL} or @code{SSM_LOWER}
+according to whether the first buffer is greater than, equal to or less than
+the second buffer. Can also be an error code.
+@end multitable
+
+@ssmdef ssm_dbuffer_insert
+Insert a ``hole'' in a @code{ssm_dbuffer_t}, shifting the rest of the buffer upward.
+
+@cartouche
+@example
+ssm_status_t ssm_dbuffer_insert (ssm_dbuffer_t* @var{buf},
+                                 size_t @var{start},
+                                 size_t @var{length});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in,out @tab The buffer to modify.
+@item @var{start} @tab in @tab Index in the buffer where to insert a ``hole''.
+@item @var{length} @tab in @tab Size of the ``hole''.
+@item @tab return @tab A status value.
+@end multitable
+
+The content size of the buffer is increased by @var{length} bytes.
+All bytes in the buffer starting at index @var{start} are moved @var{length} bytes upward.
+The previous content of the buffer in the created ``hole'' is left unmodified.
+If @var{start} is greater than the current buffer size, the buffer is
+unmodified and @code{SSM_INDEXRANGE} is returned.

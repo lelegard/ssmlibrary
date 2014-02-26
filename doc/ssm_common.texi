@@ -1,0 +1,325 @@
+@node Common mechanisms
+@chapter Common mechanisms
+
+@menu
+* SSM library identification::
+* Error reporting::
+* Addresses and sizes::
+* Dynamic memory management::
+@end menu
+
+@node SSM library identification
+@section SSM library identification
+
+@ssmdef SSM_MAJOR_VERSION
+@cartouche
+@example
+#define SSM_MAJOR_VERSION 1
+@end example
+@end cartouche
+
+This macro defines the major version number of the SSM library, 1 in the example.
+
+@ssmdef SSM_MINOR_VERSION
+@cartouche
+@example
+#define SSM_MINOR_VERSION 4
+@end example
+@end cartouche
+
+This macro defines the minor version number of the SSM library, 4 in the example.
+
+@ssmdef SSM_VERSION
+@cartouche
+@example
+#define SSM_VERSION 104
+@end example
+@end cartouche
+
+This macro defines the version number of the SSM library as one single
+integer value equal to @math{100 * @var{major} + @var{minor}}. So version 1.4
+gives 104 in the example.
+
+@ssmdef SSM_VERSION_STRING
+@cartouche
+@example
+#define SSM_VERSION_STRING "1.4"
+@end example
+@end cartouche
+
+This macro defines the version of the SSM library as a string, "1.4" in
+the example.
+
+@node Error reporting
+@section Error reporting
+
+@ssmdef ssm_status_t
+Status values, as returned by all SSM functions.
+
+@cartouche
+@example
+typedef enum @{...@} ssm_status_t;
+@end example
+@end cartouche
+
+This enumeration type defines the status values, as returned by all SSM
+functions.
+
+As a general rule, if the returned value is not zero (@code{SSM_OK}), the result
+is not the expected one. But, in all cases, the output buffers are
+@emph{safe values}, meaning that truncated strings are still correctly
+null-terminated and the size of a truncated memory buffer indicates the
+useable (truncated) part of the buffer.
+
+Status values can be categorized in three classes: success, non-fatal
+errors and fatal errors. The application has the choice to either check
+for individual status values or use one of the status checking macros.
+
+@multitable @columnfractions .25 .60 .15
+@headitem Status value
+@tab Description
+@tab Severity
+@item @t{SSM_OK}
+@findex SSM_OK
+@tab The function executed successfully.
+@tab Success
+@item @t{SSM_TRUNCATED}
+@findex SSM_TRUNCATED
+@tab The result is truncated but safe.
+@tab Success
+@item @t{SSM_EQUAL}
+@findex SSM_EQUAL
+@tab Objects are equal after comparison.
+@tab Success
+@item @t{SSM_LOWER}
+@findex SSM_LOWER
+@tab Object 1 is lower than object 2 after comparison.
+@tab Success
+@item @t{SSM_GREATER}
+@findex SSM_GREATER
+@tab Object 1 is greater than object 2 after comparison.
+@tab Success
+@item @t{SSM_NULLOUT}
+@findex SSM_NULLOUT
+@tab A NULL pointer was provided as output parameter.
+@tab Non-fatal
+@item @t{SSM_SIZETOOLARGE}
+@findex SSM_SIZETOOLARGE
+@tab Some size is larger than @code{SSM_SIZE_MAX}.
+@tab Non-fatal
+@item @t{SSM_INDEXRANGE}
+@findex SSM_INDEXRANGE
+@tab An index parameter in out of range.
+@tab Non-fatal
+@item @t{SSM_NOMEMORY}
+@findex SSM_NOMEMORY
+@tab Memory allocation failure, result is unchanged.
+@tab Fatal
+@item @t{SSM_CORRUPTED}
+@findex SSM_CORRUPTED
+@tab Memory was previously corrupted, result is undefined but safe.
+@tab Fatal
+@item @t{SSM_BUG}
+@findex SSM_BUG
+@tab Internal inconsistency, there is a bug in the SSM library.
+@tab Fatal
+@end multitable
+
+The following functions (they are actually macros) check the severity of
+a @code{ssm_status_t} value.
+
+@ssmdef ssm_success
+Check if a status indicates a success.
+
+@cartouche
+@example
+int ssm_success (ssm_status_t @var{status});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{status} @tab in @tab A status to check.
+@item @tab return @tab
+A non-zero value (true) if @var{status} indicates a success and
+zero (false) if it indicates an error.
+@end multitable
+
+A success means that the operation completed successfully. A success
+status may also indicate a truncation but, in the general case, this
+is not an error, the supplied inputs were too large for the application
+buffer but the result is safe.
+
+As a general rule, if you want to test that an operation gave the @emph{exact}
+result, compare it against @code{SSM_OK}. If you simply want to check if the
+application processing may reasonably continue, use @code{ssm_success()}.
+
+@ssmdef ssm_error
+Check if a status indicates an error.
+
+@cartouche
+@example
+int ssm_error (ssm_status_t @var{status});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{status} @tab in @tab A status to check.
+@item @tab return @tab
+A non-zero value (true) if @var{status} indicates an error (fatal or non-fatal)
+and zero (false) if it indicates a success.
+@end multitable
+
+@ssmdef ssm_fatal
+Check if a status indicates a fatal error.
+
+@cartouche
+@example
+int ssm_fatal (ssm_status_t @var{status});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{status} @tab in @tab A status to check.
+@item @tab return @tab
+A non-zero value (true) if @var{status} indicates a fatal error and
+zero (false) if it indicates a success or a non-fatal error.
+@end multitable
+
+A fatal error indicates that something went badly wrong in the
+application such as a memory corruption or no more available
+memory. Trying to continue after a fatal error may be dangerous since
+the application environment may be unstable. The usual response to a
+fatal error is terminating the application after the minimal cleanup
+of the resources.
+
+Conversely, a non-fatal error indicates that the SSM function could
+not perform the requested operation because, for instance, a parameter
+was incorrect. In that case, the output objects (if any) are not
+modified and the application may continue after performing the
+adequate error processing.
+
+@node Addresses and sizes
+@section Addresses and sizes
+
+@ssmdef SSM_SIZE_MAX
+
+The value of this macro specifies the maximum size of a used-defined
+memory area.
+
+Sometimes, the application has to pass the size of a memory area to the
+SSM library. Such a size uses the predefined type @code{size_t}. The C
+standard defines this type as unsigned. Computing a @code{size_t} value
+may result in an underflow, giving a very large unsigned value. To detect
+these wrong values, the SSM library does not accept @code{size_t} values
+above some arbitrary large but reasonable value named @code{SSM_SIZE_MAX}.
+
+This value is hard-coded to @math{2^{31} - 1} (approximately 2 giga-bytes).
+In practice, @code{size_t} is either 32 or 64 bits wide. But, even on 64-bit
+platforms, having a user-defined memory area larger that 2 GB is suspect
+and consequently rejected.
+
+@ssmdef SSM_ADDRESS_MAX
+
+The value of this macro specifies the maximum representable address in
+the system as a value of type @code{void*}.
+
+@ssmdef ssm_addr_size
+Compute a safe address plus an offset.
+
+@cartouche
+@example
+const void* ssm_addr_size (const void* @var{addr}, size_t @var{size});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{addr} @tab in @tab Base address.
+@item @var{size} @tab in @tab Offset to add to @var{addr}.
+@item @tab return @tab
+Return @var{addr} plus @var{size} without overflow.
+The result is always greater than @var{addr},
+returning @code{SSM_ADDRESS_MAX} in case of overflow.
+@end multitable
+
+When very large (and usually incorrect) sizes are added to an address,
+there is a risk of arithmetic overflow. The resulting address is lower
+than the base address, which usually produces nasty side effects in
+address or pointer comparisons. This function (which is inlined for
+performance) solves this problem.
+
+@node Dynamic memory management
+@section Dynamic memory management
+
+This section describes how the application can override the default memory management
+functions for the dynamic strings and dynamic memory buffers.
+
+@ssmdef ssm_malloc_t
+Memory allocation function type.
+
+@cartouche
+@example
+typedef void* (*ssm_malloc_t) (size_t @var{size});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{size} @tab in @tab Size in bytes of the area to allocate.
+@item @tab return @tab The base address of the allocated area
+or @code{NULL} if no memory is available.
+@end multitable
+
+This function profile is used to specify an alternative function to @code{malloc()}.
+
+The SSM library never allocates memory areas larger that @code{SSM_SIZE_MAX}.
+
+@ssmdef ssm_free_t
+Memory deallocation function type.
+
+@cartouche
+@example
+typedef void (*ssm_free_t) (void* @var{ptr});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{ptr} @tab in @tab Address of a previously allocated area.
+@end multitable
+
+This function profile is used to specify an alternative function to @code{free()}.
+
+The SSM library never invokes the free function with a @code{NULL} pointer.
+
+@ssmdef ssm_set_memory_management
+Specify alternate functions for memory management.
+
+@cartouche
+@example
+void ssm_set_memory_management (ssm_malloc_t @var{newMalloc}, ssm_free_t @var{newFree});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{newMalloc} @tab in @tab Alternate function for @code{malloc()}.
+@item @var{newFree} @tab in @tab Alternate function for @code{free()}.
+@end multitable
+
+These functions are used by dynamic strings and dynamic memory buffers.
+
+For user-mode programs, the default functions are the standard @code{malloc()}
+and @code{free()}. On some specific platforms, such as the Linux kernel,
+there is no default memory allocation functions and
+@code{ssm_set_memory_management()} must be invoked before using
+dynamic strings or dynamic memory buffers.
+
+If any of the parameters @var{newMalloc} and @var{newFree} is @code{NULL}, then the
+library reverts to the corresponding default memory management function.
+
+This function is not thread-safe and shall be invoked before the first
+usage of dynamic strings or dynamic memory buffers.

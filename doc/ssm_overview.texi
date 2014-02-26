@@ -1,0 +1,428 @@
+@node Overview
+@chapter Overview
+
+The SSM library provides safe functions for handling strings and memory buffers in C.
+
+@menu
+* The classical C strings library::
+* The SSM library::
+* SSM objects::
+* Using the SSM library::
+* Thread-safety::
+* Dynamic memory allocation::
+* Using "canary" runtime checks::
+* Supported platforms::
+* Code footprint::
+* License::
+@end menu
+
+@node The classical C strings library
+@section The classical C strings library
+
+The problems of the unsafe C string functions from the C-library are well-known.
+The null-terminated C string representation and the infamous @code{strcpy()} and
+@code{strcat()} functions date back from the 70's, in the early days of the UNIX
+operating system and the original "Kernighan & Ritchie" C language.
+
+Several functions write a null-terminated variable-length string into a
+destination buffer which is known by its base address only. Since the function
+has no clue about the buffer size, it writes past the end of the output buffer
+if the input data are larger than the buffer size; overwriting memory areas
+which may contain valuable data. In this context, the concept of @emph{buffer} as
+a bounded memory area is purely in the developer's mind since the language and
+its library work at a very low abstraction level, similar to assembly code.
+
+The impacts of such buffer overflows include:
+
+@itemize
+@item
+@strong{Reliability}: Data corruption.
+
+@item
+@strong{Robustness}: Application erratic behaviour or crash
+(when the overwritten data contained pointers).
+
+@item
+@strong{Security}: Malicious code injection or @emph{ret-to-libc} attack
+(when the overwritten data include the stack frame and return pointer).
+@end itemize
+
+Using the old unsafe C strings library should be banned from all modern code,
+especially when security matters.
+
+To mitigate the intrinsic buffer overflow issue with the old C library functions,
+variants were introduced with an additional parameter indicating the maximum size
+of the buffer. By convention, most of these functions have an @code{'n'} in the
+middle of their name such as
+@findex @code{strncpy}
+@code{strncpy()} or
+@findex @code{strncat}
+@code{strncat()}.
+If they are used correctly, these functions never write past the end of the
+user-supplied buffer. However, using them correctly is quite hard since these
+functions are inconsistent with each other:
+
+@itemize
+@item
+The semantic of the size parameter differs:
+
+@itemize @minus
+@item
+Sometimes it includes the final null character and sometimes it does not.
+In the later case, the size parameter must be the buffer size minus one.
+@end itemize
+
+@item
+When the data to write are larger than the buffer, no extra data is overwritten.
+But the exact behavior depends on the function:
+
+@itemize @minus
+@item
+Overflow detection: Can we detect that a larger buffer would have been required?
+Some functions return a specific value indicating that the buffer was too short.
+With some other functions, the returned data is silently truncated, generating
+an incorrect result without any way to detect it.
+
+@item
+Truncated or undefined content: Is the string in the returned buffer truncated
+or undefined (ie. maybe not written at all)?
+
+@item
+Null-terminated or not: When the string is too large, some functions write @code{n}
+characters without a null terminator while other functions write @code{n-1} characters
+followed by a null terminator.
+@end itemize
+@end itemize
+
+As a consequence, the @code{'n'} functions are quite hard to use correctly.
+Each function has a specific behavior and must be surrounded by distinct
+user-written checks every time. In other words, using the @code{'n'} functions
+is very error-prone and they should be banned as well.
+
+More generally, the @code{'n'} functions have the same fundamental flaw as the
+classical string functions, their abstraction level is very low. The concepts of
+@emph{string} or @emph{buffer} do not exist. These functions manipulate addresses
+and sizes independently. Providing the correct size at the right time is entirely
+left to the application developer whose work is more complex and consequently
+more error-prone.
+
+Other alternative C strings libraries exist such as 
+the @url{http://bstring.sourceforge.net,Better String Library}@footnote{http://bstring.sourceforge.net},
+the @url{http://sourceforge.net/projects/safeclib/,Safe C Library}@footnote{http://sourceforge.net/projects/safeclib/} or
+the @url{https://www.securecoding.cert.org/confluence/display/seccode/Managed+String+Library,Managed String Library}@footnote{https://www.securecoding.cert.org/confluence/display/seccode/Managed+String+Library}.
+An @url{http://www.and.org/vstr/comparison,online article}@footnote{http://www.and.org/vstr/comparison}
+lists a comparative description of a large number of string libraries, although not limited to the C language.
+
+Some of these libraries provide a higher level of abstraction to manipulate strings.
+But no general consensus exists on a safe alternative to the old C string library.
+
+@node The SSM library
+@section The SSM library
+
+The SSM library is a safe and reliable alternative the old C string library.
+
+As mentioned in the previous section, several alternatives already exist
+for the unsafe C string library. So, why creating a new library?
+
+The SSM library presents a unique combination of characteristics that
+should be considered as mandatory for environments requiring both
+safety and security. To our knownledge, no other library meets all
+these requirements altogether.
+
+These requirements are:
+
+@itemize
+@item
+Handle @emph{strings} and raw @emph{memory buffers}.
+
+@item
+For both types of object, provide a @emph{static} alternative (fixed size)
+and a @emph{dynamic} alternative (unbounded size using dynamic memory
+allocation).
+
+@item
+No dependency on other external libraries.
+
+@item
+Portable and light-weight. Can be used in various environments:
+
+@itemize @minus
+@item
+Application code.
+@item
+Linux kernel modules.
+@item
+Embedded systems.
+@end itemize
+
+@item
+Proven and robust code for safety and security:
+
+@itemize @minus
+@item
+Simple and straightforward code.
+@item
+Complete unitary tests based on @command{CUnit}.
+@item
+Automatic non-regression tests based on unitary tests.
+@item
+Automatic static code analysis using @command{cppcheck} and @command{flawfinder} (other analyzers may be added).
+@item
+Automatic code coverage analysis using @command{gcov}.
+@item
+Achieve 100% code coverage in analysis.
+@end itemize
+
+@item
+Complete reference documentation.
+@end itemize
+
+Note that using this library in C++ is discouraged since the C++ Standard
+Template Library (STL) contains much better classes, namely @code{std::string}
+and @code{std::vector}. This library is only a pitiful attempt to fix one of the
+worst achievements in software engineering, the C string library...
+
+@node SSM objects
+@section SSM objects
+
+The SSM library defines two types of objects:
+@emph{strings} and @emph{memory buffers}.
+Each type exists in two flavors:
+@emph{static} and @emph{dynamic}.
+
+A memory buffer contains raw binary data of any type.
+Its size is expressed in bytes.
+
+A string is supposed to contains characters only (type @code{char}).
+For compatibility with classical C-strings, the internal representation
+of a string is always followed by a zero byte. This terminating zero
+byte, however, is not considered as a part of the string (it is not
+included in the string @emph{length} for instance).
+
+A static string or memory buffer is declared with a static maximum size,
+just like a regular C array. It can contain up to that number of characters
+or bytes. A static string or memory object is a fast low-level type without
+any sort of memory allocation. The storage for the characters or bytes
+is reserved within the variable, like C arrays.
+
+Whenever an operation requires more memory than reserved in a static
+string or memory buffer, the result is safely truncated. In the case
+of a static string, a truncated result is always null-terminated.
+The truncation is always reported in a returned status.
+
+A dynamic string or memory buffer uses dynamic memory allocation to store the content.
+One advantage is that truncation never occurs.
+One drawback is the overhead of memory allocation.
+
+See @ref{Dynamic memory management}
+for more details on the implementation of memory allocation.
+
+But the worst drawback of dynamic objects is the risk of memory leak.
+All dynamic objects must be explicitely freed by the user.
+Failing to do so results in a memory leak. This is particularly
+dangerous when an @emph{early return path} is taken, bypassing the cleanup
+code at the end of a block. Note that the main reason for this risk
+is that the C language has no concept of @emph{destructor} as in C++.
+
+Another risk of dynamic objects is the memory allocation failure.
+Whenever a memory allocation failed within an SSM function, the function
+returns the status value @code{SSM_NOMEMORY}. In that case, the dynamic
+object which could not be reallocated is not modified. So, the result is still
+a @emph{safe} object. But the application is @emph{reliable} only if the user code
+properly checks the returned status value.
+
+@node Using the SSM library
+@section Using the SSM library
+
+All declaractions are contained in the single header files @file{ssm.h}.
+
+All public identifiers which are exported by the SSM library start
+with the prefix @code{ssm_} (functions) or @code{SSM_} (constants).
+
+All code is contained into one single static library. To allow fine-grained
+selective linking in constrained environments, each function is implemented
+in a separate object file.
+
+There is also a shared library version of the SSM library. Due to the usage
+restrictions of the GNU Lesser General Public License, proprietary applications
+must link against the shared library version. They are not allowed to link
+against the static library, unless the application is provided in an object
+form which can be relinked using another version of the SSM library.
+
+On UNIX, Linux and Cygwin environments, the static library is named @file{libssm.a}
+and the shared library is named @file{libssm.so}.
+
+On Windows systems with Microsoft Visual C++, the static library is
+named @file{ssmlib.lib}.
+
+On Windows systems with Microsoft Visual C++, the dynamic library is
+named @file{ssmdll.dll} and the corresponding symbol library is named
+@file{ssmdll.lib} (this is the file which is used by the linker).
+
+@strong{Important:} When linking against the DLL @file{ssmdll.dll},
+a special symbol must be defined during the compilation.
+Define the symbol @code{SSM_USE_DLL} before including @file{ssm.h},
+either as a project option (preferred solution) or in the source file
+as follow:
+@findex @code{SSM_USE_DLL}
+
+@example
+#define SSM_USE_DLL
+#include "ssm.h"
+@end example
+
+@node Thread-safety
+@section Thread-safety
+
+Unless explicitely specified otherwise, all functions in the SSM library
+are thread-safe as long as they work on distinct objects.
+
+If the same object (static string, dynamic string, static buffer, dynamic
+buffer) is concurrently accessed by multiple threads, some explicit
+exclusive access mechanism must be implemented at the application code level
+before invoking the SSM library on this object.
+
+@node Dynamic memory allocation
+@section Dynamic memory allocation
+
+For dynamic strings and dynamic memory buffers, the default memory allocation
+and deallocation functions are the standard @code{malloc()} and @code{free()}.
+However, they may not be ideal in all environments, especially in constrained
+systems. To cope with that, the user application may specify alternative memory
+management functions using @code{ssm_set_memory_management()}. This function
+shall be called before any usage of dynamic strings or buffers.
+
+Another usage of the replacement of the memory allocation functions
+is the handling of memory allocation failures. In many applications,
+a memory allocation failure is fatal and cannot be recovered. It
+could be useful to provide an application-specific memory allocation
+routine which reports the allocation failure and aborts the application.
+
+Note that there is no replacement for @code{realloc()}. No such function is
+used. Although @code{realloc()} could bring some performance improvement
+over a sequence of @code{malloc()}, copy and @code{free()}, the result is
+unpredictable in case of memory allocation failure; there is no guarantee
+that the previous memory area was preserved. To keep the library safe and
+predictable, it does not use @code{realloc()}.
+
+In environments where the standard @code{malloc()} and @code{free()} are not
+available, such as the Linux kernel, there is no default memory management
+functions. The user shall invoke @code{ssm_set_memory_management()} before
+using dynamic strings or buffers. Otherwise, all memory allocations will fail.
+
+@node Using "canary" runtime checks
+@section Using "canary" runtime checks
+
+All functions in this library are @emph{safe by design}, meaning that no memory
+corruption can occur using the library. However, there is always a risk that
+some user code corrupts the memory areas which are used to store the safe
+strings and memory buffers.
+
+All functions in this library exist in two flavors. The default form of a
+function assumes that no external cause of memory corruption exists and is
+typically used for production code. The second form of a function uses
+"@i{canary}" runtime checks. In this approach, all data structures are
+protected using "@i{canary}" values at the start and end of all data structures.
+If a memory corruption occurs, it is likely that these canary values
+are modified. The canary form of each function performs runtime checks
+to detect memory corruptions.
+
+To enable the canary runtime checks, define the symbol @code{SSM_USE_CANARY}
+before including @file{ssm.h} as follow:
+@findex @code{SSM_USE_CANARY}
+
+@example
+#define SSM_USE_CANARY
+#include "ssm.h"
+@end example
+
+See the function @code{ssm_set_canary_corrupted_handler()} for a description of
+the handling of memory corruptions when they are detected.
+
+@node Supported platforms
+@section Supported platforms
+
+The SSM library has been tested on the following platforms:
+
+@itemize
+@item
+User-mode applications:
+
+@itemize @minus
+@item
+Red Hat Enterprise Linux 6.1 / x86-64 / gcc 4.4.5
+@item
+Linaro Linux 12.05 / ARM v7 (Snowball) / gcc 4.6.3
+@item
+Microsoft Windows 7 / x86 / Microsoft Visual C++ 2010 Express
+@item
+Microsoft Windows 7 / x86 / Cygwin / gcc 4.8.2
+@end itemize
+
+@item
+Kernel modules:
+
+@itemize @minus
+@item
+Red Hat Enterprise Linux 6.1 / x86-64 / gcc 4.4.5 / kernel 2.6.32
+@end itemize
+@end itemize
+
+@node Code footprint
+@section Code footprint
+
+In embedded systems, there is a usual requirement for a small code footprint.
+The following table summarizes the code footprint in bytes of various usages
+of the SSM library on some standard platforms.
+
+@multitable {Production only (non-canary)} {ARM v7} {Intel 32} {Intel 64}
+@headitem Feature                  @tab ARM v7 @tab Intel 32 @tab Intel 64
+@item Total code size              @tab   3337 @tab     9300 @tab     7681
+@item Production only (non-canary) @tab   1508 @tab     4260 @tab     3575
+@item Static strings only          @tab    722 @tab     1968 @tab     1666
+@item Dynamic strings only         @tab   1002 @tab     2876 @tab     2364
+@item Static buffers only          @tab    634 @tab     1656 @tab     1406
+@item Dynamic buffers only         @tab    914 @tab     2564 @tab     2104
+@end multitable
+@*
+
+Please note the following points:
+
+@itemize
+@item
+Each value represents the total size of the code, data and BSS segments in bytes.
+@item
+The code was compiled with size optimization in mind.
+@item
+All results are produced by GCC. MSVC code size was not checked.
+@item
+Slightly different values may be found with different versions of GCC.
+@item
+The reported values depend on the version of the library and need to be
+updated with the code. Make sure the documentation was correctly updated.
+@item
+The code is compiled as position-independent (@option{-fPIC}) by default to allow
+the creation of shared libraries. It has been observed that the code footprint
+is slightly smaller without this option.
+@item
+The total library code size includes the versions with and without "canary checks",
+which is not used in practice. The first line is consequently not meaningful in
+production environments. All subsequent results include only the "production" code
+(without "canary" checks).
+@item
+The sections about static or dynamic strings or memory buffers list the total
+code size for a given feature. But note that:
+@itemize @minus
+@item
+An application embeds only the code it requires, not all modules.
+@item
+Some features use common code. Using two features usually requires less than
+the sum of the code for the two features.
+@end itemize
+@end itemize
+
+@node License
+@section License
+
+The SSM library is distributed under the terms of the
+GNU Lesser General Public License version 3.

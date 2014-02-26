@@ -1,0 +1,31 @@
+#-----------------------------------------------------------------------------
+#
+#  Copyright (c) 2014, Thierry Lelegard
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 3.0 of the License, or (at your option) any later version.
+#  See the file COPYING.txt included with this distribution for more
+#  information.
+#
+#-----------------------------------------------------------------------------
+#
+#  Common makefile definitions for the SSM library.
+#
+#-----------------------------------------------------------------------------
+#
+#  Modification history:
+#    2014-01-06 Thierry Lelegard
+#               Original creation.
+#
+#-----------------------------------------------------------------------------
+
+include $(patsubst %/,%,$(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))))/Makefile.common
+
+SSMLIB   := $(ROOTDIR)/src/$(OBJDIR)/libssm.a
+SSMSHLIB := $(ROOTDIR)/src/$(OBJDIR)/libssm.so
+
+CFLAGS_INCLUDES += -I$(ROOTDIR)/include
+CPPCHECK_FLAGS  += -I $(ROOTDIR)/include
+CFLAGS_OPTSIZE  += -D_SSM_OPTIM_SIZE=1

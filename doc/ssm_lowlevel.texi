@@ -1,0 +1,189 @@
+@node Low-level mechanisms
+@chapter Low-level mechanisms
+
+@menu
+* Memory corruption detection::
+* Manipulating raw memory::
+@end menu
+
+@node Memory corruption detection
+@section Memory corruption detection
+
+As explained in @ref{Using "canary" runtime checks}, the SSM library can be used
+with "canary checks", a debug mode which detects memory corruptions.
+
+When a memory corruption is detected in an application, the default behavior is
+to report an error message and abort the application. Within the Linux kernel,
+a kernel message of severity @emph{alert} is logged.
+
+This section explains how to override this default behavior.
+
+@ssmdef ssm_canary_corrupted_handler_t
+Memory corruption handler profile.
+
+@cartouche
+@example
+typedef void (*ssm_canary_corrupted_handler_t) (const char* @var{file}, size_t @var{line});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{file} @tab in @tab Application source file name.
+@item @var{line} @tab in @tab Line number in the source file.
+@end multitable
+
+A function of this type is invoked when "canary" runtime checks are
+enabled and a memory corruption is detected.
+
+The parameters of the function indicate the location of the failure,
+ie. the user code which invoked an SSM function which detected the
+memory corruption.
+
+@ssmdef ssm_set_canary_corrupted_handler
+Establish a user-defined memory corruption handler.
+
+@cartouche
+@example
+ssm_canary_corrupted_handler_t
+    ssm_set_canary_corrupted_handler (ssm_canary_corrupted_handler_t @var{handler});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{handler} @tab in @tab New handler to set.
+If @code{NULL}, revert to the default handler.
+@item @tab return @tab 
+The previous handler or @code{NULL} if the default handler was active.
+@end multitable
+
+This function specifies which function should be used when a memory corruption is
+detected. This function does nothing if canary runtime checks are disabled.
+
+In user-mode programs, the default handler displays an error message
+on the standard error and aborts the application.
+
+This function is not thread-safe.
+
+@node Manipulating raw memory
+@section Manipulating raw memory
+
+The functions in this section manipulate raw memory areas.
+They should not be used in normal operations and should be reserved
+to extreme situations.
+
+@ssmdef ssm_copy
+General-purpose memory copy.
+
+@cartouche
+@example
+ssm_status_t ssm_copy (void* @var{dest},
+                       size_t @var{destSize},
+                       const void* @var{src},
+                       size_t @var{srcSize},
+                       size_t* @var{copiedSize});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab Base address of destination area.
+@item @var{destSize} @tab in @tab Maximum size in bytes of destination area.
+@item @var{src} @tab in @tab Base address of source area.
+Can be @code{NULL}, in which case @var{srcSize} is implicitely zero.
+@item @var{srcSize} @tab in @tab Size in bytes of source area.
+Ignored if @var{src} is @code{NULL}.
+@item @var{copiedSize} @tab out @tab Receive the actual number of copied bytes.
+Can be @code{NULL} (value not returned).
+@item @tab return @tab A status value.
+@end multitable
+
+This function is an alternate version of the standard @code{memcpy()} with bounded sizes.
+Overlapping memory areas between @var{src} and @var{dest} are allowed.
+
+If not @code{NULL}, @var{copiedSize} receives the actual number of copied bytes.
+If the returned status is @code{SSM_OK}, it gets the same value as @var{srcSize}.
+If the returned status is @code{SSM_TRUNCATED}, it gets the same value as @var{destSize}.
+For all other returned status, the value pointed by @var{copiedSize} is not modified.
+It is safe to point directly to a @code{size_t} variable containing the used size of
+@var{dest}. In case of error, neither @var{dest} nor @code{*}@var{copiedSize} are modified).
+
+@ssmdef ssm_compare
+General-purpose memory comparison.
+
+@cartouche
+@example
+ssm_status_t ssm_compare (const void* @var{addr1},
+                          size_t @var{size1},
+                          const void* @var{addr2},
+                          size_t @var{size2});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{addr1} @tab in @tab Base address of first memory area.
+@item @var{size1} @tab in @tab Size in bytes of first memory area.
+@item @var{addr2} @tab in @tab Base address of second memory area.
+@item @var{size2} @tab in @tab Size in bytes of second memory area.
+@item @tab return @tab The result of the comparison between the two memory areas,
+either @code{SSM_EQUAL}, @code{SSM_LOWER}, @code{SSM_GREATER} or an error code.
+@end multitable
+
+This function is an alternate version of the standard @code{memcmp()} with bounded sizes.
+
+The two memory areas are compared byte by byte. 
+The function returns @code{SSM_GREATER}, @code{SSM_EQUAL} or @code{SSM_LOWER}
+according to whether the first memory area is greater than, equal to or less than
+the second memory area.
+
+Two memory areas are equal if they have the same size and same content.
+If the two areas have different sizes, the comparison is made on the
+smallest of the two sizes and, if both contents are identical, the area
+with the smallest size is logically less than the other area.
+
+If any of @var{addr1} or @var{addr2} is @code{NULL}, it is equivalent
+to an empty area the size of which is zero. All empty areas, whether their
+address is @code{NULL} or their size is explicitly zero, are considered as equal.
+
+@ssmdef ssm_set
+General-purpose memory initialization.
+
+@cartouche
+@example
+ssm_status_t ssm_set (void* @var{dest}, size_t @var{destSize}, uint8_t @var{value});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab Base address of destination area.
+@item @var{destSize} @tab in @tab Size in bytes of destination area.
+@item @var{value} @tab in @tab The value to set in each byte of the destination area.
+@item @tab return @tab A status value.
+@end multitable
+
+This function is an alternate version of the standard @code{memset()} with bounded sizes.
+
+@ssmdef ssm_cstring_length
+Compute the length of a C-string.
+
+@cartouche
+@example
+size_t ssm_cstring_length(const char* @var{str}, size_t @var{maxSize});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{str} @tab in @tab Address of a null-terminated C-string.
+@item @var{maxSize} @tab in @tab Maximum size of the C-string.
+Specify @code{SSM_SIZE_MAX} if unbounded.
+@item @tab return @tab The length of the C-string or @var{maxSize} if no
+null character was found in the first @var{maxSize} characters.
+@end multitable
+
+This function is an alternate version of the standard @code{strnlen()}
+with bounded size. If @var{maxSize} is greater than @code{SSM_SIZE_MAX},
+the size is assumed to be incorrect and zero is returned.

@@ -1,0 +1,47 @@
+#-----------------------------------------------------------------------------
+#
+#  Copyright (c) 2014, Thierry Lelegard
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 3.0 of the License, or (at your option) any later version.
+#  See the file COPYING.txt included with this distribution for more
+#  information.
+#
+#-----------------------------------------------------------------------------
+#
+#  Makefile for demo Linux kernel module using the SSM library.
+#
+#  This makefile will be copied as "Makefile" into the temporary directory
+#  which is used to build the kernel module.
+#
+#-----------------------------------------------------------------------------
+#
+#  Modification history:
+#    2014-01-08 Thierry Lelegard
+#               Original creation.
+#
+#-----------------------------------------------------------------------------
+
+# The directory which contains this makefile.
+SSMDEMODIR := $(shell cd $(patsubst %/,%,$(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))); pwd)
+
+# The standard kernel module definitions.
+obj-m += ssmdemo.o
+ssmdemo-objs := kernelmodule.o $(addsuffix .o,$(notdir $(basename $(wildcard $(SSMDEMODIR)/ssm_*.c))))
+
+# The version of kernel to use (default is current running one).
+KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+
+# Build, clean, load, unload module, view kernel log for module...
+all:
+	$(MAKE) -C $(KERNELDIR) M=$(CURDIR) modules
+clean:
+	$(MAKE) -C $(KERNELDIR) M=$(CURDIR) clean
+load: all
+	sudo insmod ssmdemo.ko
+unload:
+	sudo rmmod ssmdemo
+view:
+	@dmesg | grep '^ssmdemo:'

@@ -1,0 +1,90 @@
+body {
+    margin: 2%;
+    padding: 0 5%;
+    background: #ffffff;
+    font: .875em/1.35 'Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;
+}
+h1,h2,h3,h4,h5 {
+    font-weight: bold;
+    padding: 5px 5px 5px 5px;
+    background-color: #b6c4df;
+    color: black;
+}
+h1 {
+    letter-spacing: 2px;
+    text-align: center;
+}
+h4.unnumberedsubsec {
+    font-size: 150%;
+}
+:link {
+    color: #4867a5;
+    text-decoration: none;
+}
+:visited {
+    color: #4867a5;
+    text-decoration: none;
+}
+a:hover {
+    color: #b6c4df;
+    text-decoration: none;
+}
+pre {
+    margin: 0 5%;
+    padding: 0.5em;
+}
+div.example {
+    border: 1px solid silver;
+    background: #f4f4f4;
+    margin: 0em 0em 0em 0em;
+    color: #033da3;
+    border-radius: 4px;
+}
+pre.example {
+    border: none;
+}
+table.cartouche {
+    border: 1px solid silver;
+    border-spacing: 0px 0px;
+    background: #f4f4f4;
+    border-radius: 4px;
+}
+pre.verbatim {
+    border: solid 1px gray;
+    background: white;
+    padding-bottom: 1em;
+}
+div.node {
+    margin: 0 -5% 0 -2%;
+    padding: 0.5em 0.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    font-weight: bold;
+}
+dd, li {
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+}
+table
+{
+    border-collapse: separate;
+    border-spacing: 20px 2px;
+}
+td {
+    vertical-align: top;
+}
+table.header, div.header p {
+    white-space: nowrap;
+}
+table.header a, div.header p a {
+    border-bottom: none;
+}
+table.header {
+    margin: .5em 0em .5em 0em;
+}
+thead {
+    text-align: left;
+}
+table.menu {
+    display: none;
+}

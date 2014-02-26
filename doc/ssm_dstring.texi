@@ -1,0 +1,362 @@
+@node Dynamic strings
+@chapter Dynamic strings
+
+@section Dynamic strings overview
+
+A dynamic string uses dynamic memory allocation to store the content.
+
+See @ref{Dynamic memory management}
+for more details on the implementation of memory allocation.
+
+A dynamic string is defined by the type @code{ssm_dstring_t}.
+Since a dynamic string points to allocated memory, it is essential that
+any such object is properly initialized. This is why a dynamic string
+should be declared by the macro @code{ssm_dstring_declare()}. This macro
+ensures that the variable is properly initialized to an empty string.
+
+The following example defines a dynamic string named @code{foo}:
+
+@example
+ssm_dstring_declare (foo);
+
+ssm_dstring_import (&foo, "foo bar");
+size_t len = ssm_dstring_length (&foo);
+@end example
+
+Note that, unlike C++, the C language does not have any @emph{constructor}
+mechanism providing a guaranteed initial content to an object. Using
+an uninitialized dynamic string object may lead to crash or other
+unexpected behavior. So the following code compiles but it is incorrect:
+the variable is uninitialized and may point to invalid data.
+
+SO, DO NOT USE THIS:
+
+@example
+ssm_dstring_t s;
+@end example
+
+To avoid memory leaks, it is essential that any dynamic string object is
+freeed before the object goes out of scope. Use the function @code{ssm_dstring_free()}
+as illustrated below:
+
+@example
+void f(void)
+@{
+    ssm_dstring_declare (foo);
+    ...
+    ssm_dstring_free (&foo);
+@}
+@end example
+
+Pay attention to @emph{early return paths} which could lead to memory leaks as
+in the following example:
+
+@example
+void f(void)
+@{
+    ssm_dstring_declare (foo);
+    ...
+    if (some_condition) @{
+        /* MEMORY LEAK HERE */
+        return;
+    @}
+    ...
+    ssm_dstring_free (&foo);
+@}
+@end example
+
+@section Creating and destroying dynamic strings
+
+@ssmdef ssm_dstring_t
+Definition of a dynamic string.
+
+@cartouche
+@example
+typedef ... ssm_dstring_t;
+@end example
+@end cartouche
+
+To define an actual dynamic string, use the macro @code{ssm_dstring_declare()}.
+See the section ``Dynamic strings overview'' above for more details on the usage
+of dynamic strings.
+
+Correct example:
+
+@example
+ssm_dstring_declare (s);
+
+ssm_dstring_import (&s, "foo bar");
+size_t len = ssm_dstring_length (&s);
+@end example
+
+Incorrect example, the object is not properly initialized. DO NOT USE:
+
+@example
+ssm_dstring_t s;
+@end example
+
+@ssmdef ssm_dstring_declare
+Declare a @code{ssm_dstring_t} variable.
+
+@cartouche
+@example
+#define ssm_dstring_declare(variable) \
+    ssm_dstring_t variable = ssm_dstring_init
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .85
+@headitem Parameter @tab Description
+@item @var{variable} @tab Name of the variable to declare.
+The variable is safely initialized to the empty string.
+@end multitable
+
+This macro declares a @code{ssm_dstring_t} variable.
+
+For syntactic reasons, this macro cannot be used when the @code{ssm_dstring_t}
+is not a single variable but part of a structure for instance. In that case,
+use the macro @code{ssm_dstring_init()} to initialize the @code{ssm_dstring_t} field.
+
+@ssmdef ssm_dstring_init
+Initializer for a @code{ssm_dstring_t} field.
+
+@cartouche
+@example
+#define ssm_dstring_init(size) ...
+@end example
+@end cartouche
+
+This macro returns the initializer for a @code{ssm_dstring_t} field.
+
+When declaring a simple @code{ssm_dstring_t} variable, use the macro
+@code{ssm_dstring_declare()} instead. The macro @code{ssm_dstring_init}
+shall be reserved for contexts where it is not possible to initialize
+the data, such as in the case of a field within a structure. Be sure
+to initialize the corresponding data using the macro @code{ssm_dstring_init}.
+
+Example:
+@example
+typedef struct @{
+    int before;
+    ssm_dstring_t str;
+    int after;
+@} my_struct_t;
+
+my_struct_t a = @{
+    .before = 0x1234567,
+    .str = ssm_dstring_init,
+    .after = 0x1ABCDEF
+@};
+@end example
+
+@ssmdef ssm_dstring_free
+Free a @code{ssm_dstring_t} dynamic string.
+
+@cartouche
+@example
+ssm_status_t ssm_dstring_free (ssm_dstring_t* str);
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf} @tab in,out @tab Dynamic string to free.
+@item @tab return @tab A status code.
+@end multitable
+
+This function frees a @code{ssm_dstring_t}.
+
+Upon return, the object is still valid but has the semantic of an
+empty string and has no longer any dynamic storage associated with it.
+
+@section Manipulating dynamic strings
+
+@ssmdef ssm_dstring_import
+Copy ("import") a null-terminated C-string into a @code{ssm_dstring_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_dstring_import (ssm_dstring_t* @var{dest}, const char* @var{src});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab String to fill.
+@item @var{src} @tab in @tab Address of a null-terminated C-string. Can be @code{NULL} (same as empty string).
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_dstring_import_size
+Copy ("import") an optionally null-terminated C-string into a @code{ssm_dstring_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_dstring_import_size (ssm_dstring_t* @var{dest},
+                                      const char* @var{src},
+                                      size_t @var{maxSize});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab String to fill.
+@item @var{src} @tab in @tab Address of a possibly null-terminated C-string. Can be @code{NULL} (same as empty string).
+@item @var{maxSize} @tab in @tab Maximum number of characters to copy from @var{src}.
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_dstring_chars
+Read-only access to a @code{ssm_dstring_t} as a null-terminated C-string.
+
+@cartouche
+@example
+const char* ssm_dstring_chars (const ssm_dstring_t* @var{str});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{str} @tab in @tab The dynamic string to read.
+@item @tab return @tab The current address of a read-only null-terminated C-string.
+The application is not allowed to modify this string.
+In case of detected memory corruption, return the address of an empty C-string.
+@end multitable
+
+Warning: The returned address is valid only as long as @code{str} is not modified.
+Since this function is quite fast, it is recommended to @strong{not} store the returned
+value and invoke the function each time the address is needed.
+
+Good example:
+
+@example
+dump (ssm_dstring_data (&str));
+ssm_dstring_import (&str, "foo");
+dump (ssm_dstring_data (&str));
+@end example
+
+Bad example, DO NOT DO THIS:
+
+@example
+const void* data = ssm_dstring_data (&str);
+dump (data);
+ssm_dstring_import (&str, "foo");
+dump (data);  /* WRONG, 'data' may no longer point to 'str' characters */
+@end example
+
+@ssmdef ssm_dstring_length
+Get the length of a @code{ssm_dstring_t} content.
+
+@cartouche
+@example
+size_t ssm_dstring_length (const ssm_dstring_t* @var{str});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{str} @tab in @tab The dynamic string to read.
+@item @tab return @tab The length of the string.
+In case of null @var{src} or detected memory corruption, return zero.
+@end multitable
+
+This function executes in constant time (the length value is stored,
+unlike @code{strlen()} there is no need to read the string up to the
+end to find the length).
+
+@ssmdef ssm_dstring_set
+Set all characters in a @code{ssm_dstring_t} to a given value.
+
+@cartouche
+@example
+ssm_status_t ssm_dstring_set (ssm_dstring_t* @var{str}, char @var{value});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{str} @tab in,out @tab The dynamic string to update.
+@item @var{value} @tab in @tab Value to set in all characters in the string.
+@item @tab return @tab A status value.
+@end multitable
+
+All characters inside the string are updated with the same common value.
+The size of the string is unchanged.
+
+@ssmdef ssm_dstring_set_range
+Set a range of characters in a @code{ssm_dstring_t} to a given value.
+
+@cartouche
+@example
+ssm_status_t ssm_dstring_set_range (ssm_dstring_t* @var{str},
+                                    size_t @var{start},
+                                    size_t @var{length},
+                                    char @var{value});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{str} @tab in,out @tab The dynamic string to update.
+@item @var{start} @tab in @tab Starting index in the string of the area to modify.
+@item @var{length} @tab in @tab Length in characters of the area to modify.
+@item @var{value} @tab in @tab Value to set in all characters in the area to modify.
+@item @tab return @tab A status value.
+@end multitable
+
+All characters inside a specified range in the string are updated with the same common value.
+The size of the string is unchanged.
+
+If the specified range is partially or entirely outside the current string size,
+the part of the range which is inside the string is updated and @code{SSM_TRUNCATED} is returned.
+
+@ssmdef ssm_dstring_copy
+Copy the content of a @code{ssm_dstring_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_dstring_copy (ssm_dstring_t* @var{dest}, const ssm_dstring_t* @var{src});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab Receive a copy of the dynamic string @var{src}.
+@item @var{src} @tab in @tab Source dynamic string. Can be @code{NULL} (same as empty string).
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_dstring_concat
+Append the content of a ssm_dstring_t at the end of another one.
+
+@cartouche
+@example
+ssm_status_t ssm_dstring_concat (ssm_dstring_t* @var{dest}, const ssm_dstring_t* @var{src});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab in,out @tab Receive a copy of the dynamic string @var{src} at end of previous value.
+@item @var{src} @tab in @tab Source dynamic string. Can be @code{NULL} (same as empty string).
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_dstring_compare
+Compare the content of two @code{ssm_dstring_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_dstring_compare (const ssm_dstring_t* @var{buf1},
+                                  const ssm_dstring_t* @var{buf2});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf1} @tab in @tab First string to compare. Can be @code{NULL} (same as empty string).
+@item @var{buf2} @tab in @tab Second string to compare. Can be @code{NULL} (same as empty string).
+@item @tab return @tab A status value, @code{SSM_GREATER}, @code{SSM_EQUAL} or @code{SSM_LOWER}
+according to whether the first string is greater than, equal to or less than
+the second string. Can also be an error code.
+@end multitable

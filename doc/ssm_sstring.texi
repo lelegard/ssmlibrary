@@ -1,0 +1,380 @@
+@node Static strings
+@chapter Static strings
+
+@section Static strings overview
+
+A static string is declared with a static maximum size, just like a regular C array.
+It can contain up to that number of characters. A static string is a fast low-level
+type without any sort of memory allocation. The storage for the string characters
+is reserved within the variable, like C arrays.
+
+A static string is always null-terminated, even if an operation results in a truncation.
+
+A static string is a polymorphic object which is formally defined by the abstract
+type @code{ssm_sstring_t}. In that case, @emph{abstract} means that pointers
+to existing objects of this type can be used but no object shall be defined using
+this type name.
+
+This is why a static string should be declared by the macro @code{ssm_sstring_declare()}.
+This macro ensures that the correct amount of storage is reserved and the variable
+is properly initialized to an empty string.
+
+The following example defines a static string named @code{foo} with a maximum capacity
+of 50 characters, not including the trailing null character:
+
+@example
+ssm_sstring_declare (foo, 50);
+@end example
+
+In practice, a variable which is defined by the macro @code{ssm_sstring_declare()}
+has no named type. It is only specified that it contains a field named @code{str}
+which is of type @code{ssm_sstring_t}. Thus, the actual @code{ssm_sstring_t} is
+in fact @code{foo.str}. Example:
+
+@example
+ssm_sstring_declare (foo, 10);
+ssm_sstring_import (&foo.str, "foo bar");
+size_t len = ssm_sstring_length (&foo.str);
+@end example
+
+Note that, unlike C++, the C language does not forbid the definition of objects of
+an abstract type (the concept of @emph{abstract type} does not even exist in C).
+So the following code compiles but it is incorrect: the variable is uninitialized
+and no storage is reserved for the string characters.
+
+SO, DO NOT USE THIS:
+
+@example
+ssm_sstring_t s;
+@end example
+
+@section Creating static strings
+
+@ssmdef ssm_sstring_t
+Abstract definition of a static string.
+
+@cartouche
+@example
+typedef ... ssm_sstring_t;
+@end example
+@end cartouche
+
+No object of this type shall be defined.
+To define an actual static string, use the macro @code{ssm_sstring_declare()}.
+See the section ``Static strings overview'' above for more details on the usage
+of static strings.
+
+Correct example:
+
+@example
+ssm_sstring_declare (s, 10);
+
+ssm_sstring_import (&s.str, "foo bar");
+size_t len = ssm_sstring_length (&s.str);
+myFunc (&s.str);
+@end example
+
+Incorrect example, DO NOT USE:
+@example
+ssm_sstring_t s;
+@end example
+
+Pointer to the type @code{ssm_sstring_t} may be used as function parameters.
+Example:
+
+@example
+void myFunc (const ssm_sstring_t* s) @{
+    size_t len = ssm_sstring_length (s);
+    ...
+@}
+@end example
+
+@ssmdef ssm_sstring_declare
+Declare a @code{ssm_sstring_t} variable.
+
+@cartouche
+@example
+#define ssm_sstring_declare(variable,size) \
+    ssm_sstring_struct(size) variable = ssm_sstring_init(size)
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .85
+@headitem Parameter @tab Description
+@item @var{variable} @tab Name of the variable to declare.
+The variable is safely initialized to the empty string.
+@item @var{size} @tab Maximum number of characters in the string,
+not including the trailing null character. Shall be a
+compile-time constant, unless the compiler accepts
+variable-length arrays. If the compiler accepts such
+runtime sizes, @var{size} shall be an idempotent expression
+(ie. its result shall yield the same value for each evaluation
+and it shall have no side effect).
+@end multitable
+
+This macro declares a @code{ssm_sstring_t} variable.
+
+In practice, @var{variable} has no named type. It is only
+specified that it contains a field named @code{str} which is of
+type @code{ssm_sstring_t}. Thus, the actual @code{ssm_sstring_t}
+is in fact @code{variable.str}.
+
+For syntactic reasons, this macro cannot be used when the @code{ssm_sstring_t}
+is not a single variable but part of a structure for instance. In that case,
+use the macros @code{ssm_sstring_struct()} and @code{ssm_sstring_init()}.
+
+@ssmdef ssm_sstring_struct
+Declare an uninitialized @code{ssm_sstring_t} field.
+
+@cartouche
+@example
+#define ssm_sstring_struct(size) ...
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .85
+@headitem Parameter @tab Description
+@item @var{size} @tab Maximum number of characters in the string,
+not including the trailing null character. Shall be a compile-time constant,
+unless the compiler accepts variable-length arrays.
+@end multitable
+
+This macro declares an uninitialized @code{ssm_sstring_t} field.
+
+When declaring a simple @code{ssm_sstring_t} variable, use the macro
+@code{ssm_sstring_declare()} instead. The macro @code{ssm_sstring_struct()}
+shall be reserved for contexts where it is not possible to initialize
+the data, such as in the case of a field within a structure. Be sure
+to initialize the corresponding data using the macro @code{ssm_sstring_init()}
+with @strong{exactly the same size value}.
+
+Example:
+@example
+typedef struct @{
+    int before;
+    ssm_sstring_struct(50) str;
+    int after;
+@} my_struct_t;
+
+my_struct_t a = @{
+    .before = 0x1234567,
+    .str = ssm_sstring_init(50),
+    .after = 0x1ABCDEF
+@};
+@end example
+
+@ssmdef ssm_sstring_init
+Initializer for a @code{ssm_sstring_t} field.
+
+@cartouche
+@example
+#define ssm_sstring_init(size) ...
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .85
+@headitem Parameter @tab Description
+@item @var{size} @tab Maximum number of characters in the string,
+not including the trailing null character. Shall be a compile-time constant,
+unless the compiler accepts variable-length arrays. Shall be exactly the same
+value as used in the corresponding @code{ssm_sstring_struct()} macro.
+@end multitable
+
+This macro returns the initializer for a @code{ssm_sstring_t} field.
+
+See the macro @code{ssm_sstring_struct()} for an example.
+
+When declaring a simple @code{ssm_sstring_t} variable, use the macro
+@code{ssm_sstring_declare()} instead.
+
+@section Manipulating static strings
+
+@ssmdef ssm_sstring_import
+Copy ("import") a null-terminated C-string into a @code{ssm_sstring_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_sstring_import (ssm_sstring_t* @var{dest}, const char* @var{src});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab Receive the C-string.
+@item @var{src} @tab in @tab Address of a null-terminated C-string.
+Can be @code{NULL} (same as empty string).
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_sstring_import_size
+Copy ("import") an optionally null-terminated C-string into a @code{ssm_sstring_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_sstring_import_size (ssm_sstring_t* @var{dest},
+                                      const char* @var{src},
+                                      size_t @var{maxSize});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab Receive the C-string.
+@item @var{src} @tab in @tab Address of a possibly null-terminated C-string.
+Can be @code{NULL} (same as empty string).
+@item @var{maxSize} @tab in @tab Maximum number of characters to copy from @var{src}.
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_sstring_chars
+Read-only access to a @code{ssm_sstring_t} as a null-terminated C-string.
+
+@cartouche
+@example
+const char* ssm_sstring_chars (const ssm_sstring_t* @var{str});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{str} @tab in @tab The static string to read.
+@item @tab return @tab The address of a read-only null-terminated C-string.
+The application is not allowed to modify this string.
+In case of detected memory corruption, return the address of an empty C-string.
+@end multitable
+
+Can be used to invoke legacy functions requiring a C-string.
+
+@ssmdef ssm_sstring_length
+Get the length of a @code{ssm_sstring_t}.
+
+@cartouche
+@example
+size_t ssm_sstring_length (const ssm_sstring_t* @var{str});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{str} @tab in @tab The static string to read.
+@item @tab return @tab The length of the string.
+In case of null @var{src} or detected memory corruption, return zero.
+@end multitable
+
+This function executes in constant time (the length value is stored,
+unlike @code{strlen()} there is no need to read the string up to the
+end to find the length).
+
+@ssmdef ssm_sstring_max_length
+Get the maximum string length that can be held in a @code{ssm_sstring_t}.
+
+@cartouche
+@example
+size_t ssm_sstring_max_length (const ssm_sstring_t* @var{str});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{str} @tab in @tab The static string to read.
+@item @tab return @tab The maximum number of characters that can be held in the string object,
+not including the null terminator.
+In case of null @var{src} or detected memory corruption, return zero.
+@end multitable
+
+@ssmdef ssm_sstring_set
+Set all characters in a @code{ssm_sstring_t} to a given value.
+
+@cartouche
+@example
+ssm_status_t ssm_sstring_set (ssm_sstring_t* @var{str}, char @var{value});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{str} @tab in,out @tab The static string to update.
+@item @var{value} @tab in @tab Value to set in all characters in the string.
+@item @tab return @tab A status value.
+@end multitable
+
+All characters inside the string are updated with the same common value.
+The size of the string is unchanged.
+
+@ssmdef ssm_sstring_set_range
+Set a range of characters in a @code{ssm_sstring_t} to a given value.
+
+@cartouche
+@example
+ssm_status_t ssm_sstring_set_range (ssm_sstring_t* @var{str},
+                                    size_t @var{start},
+                                    size_t @var{length},
+                                    char @var{value});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{str} @tab in,out @tab The static string to update.
+@item @var{start} @tab in @tab Starting index in the string of the area to modify.
+@item @var{length} @tab in @tab Length in bytes of the area to modify.
+@item @var{value} @tab in @tab Value to set in all characters in the area to modify.
+@item @tab return @tab A status value.
+@end multitable
+
+All characters inside a specified range in the string are updated with the same common value.
+The size of the string is unchanged.
+
+If the specified range is partially or entirely outside the current string size,
+the part of the range which is inside the string is updated and @code{SSM_TRUNCATED} is returned.
+
+@ssmdef ssm_sstring_copy
+Copy the content of a @code{ssm_sstring_t} into another one.
+
+@cartouche
+@example
+ssm_status_t ssm_sstring_copy (ssm_sstring_t* @var{dest}, const ssm_sstring_t* @var{src});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab Receive a copy of the static string @var{src}.
+@item @var{src} @tab in @tab Source static string. Can be @code{NULL} (same as empty string).
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_sstring_concat
+Append the content of a @code{ssm_sstring_t} at the end of another one.
+
+@cartouche
+@example
+ssm_status_t ssm_sstring_concat (ssm_sstring_t* @var{dest}, const ssm_sstring_t* @var{src});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab in,out @tab Receive a copy of the static string @var{src} at end of previous value.
+@item @var{src} @tab in @tab Source static string. Can be @code{NULL} (same as empty string).
+@item @tab return @tab A status value.
+@end multitable
+
+@ssmdef ssm_sstring_compare
+Compare the content of two @code{ssm_sstring_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_sstring_compare (const ssm_sstring_t* @var{buf1},
+                                  const ssm_sstring_t* @var{buf2});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{buf1} @tab in @tab First string to compare. Can be @code{NULL} (same as empty string).
+@item @var{buf2} @tab in @tab Second string to compare. Can be @code{NULL} (same as empty string).
+@item @tab return @tab A status value, @code{SSM_GREATER}, @code{SSM_EQUAL} or @code{SSM_LOWER}
+according to whether the first string is greater than, equal to or less than
+the second string. Can also be an error code.
+@end multitable

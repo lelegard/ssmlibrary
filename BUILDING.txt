@@ -1,0 +1,108 @@
+========================
+Building the SSM Library
+========================
+
+The SSM library is built in two flavors, a static library (.a on Unix, .lib
+on Windows) and a shared library (.so on Unix, .dll on Windows). The unitary
+tests are based on the CUnit framework. The unitary tests are built and run
+using the two flavors of the SSM library. On Windows, you need to obtain the
+binary installer for CUnit. You can also recompile it from sources, although
+not as straightforward. On Linux, the unitary tests can be run under the
+control of valgrind to track memory leaks.
+
+Building all libraries, tests and demos:
+
+  make
+
+Building all libraries, tests and demos in debug mode:
+
+  make debug
+
+Building the documentation (doc/ssm.pdf, doc/ssm.html, doc/ssm.info):
+
+  make doc
+
+Running the unitary tests:
+
+  make test
+
+Running the unitary tests under valgrind control:
+
+  make valgrind
+
+  Note: On ARM systems, valgrind may report "uninitialised value" errors which
+  originate from CUnit in CU_get_run_results_string. These errors are potential
+  problems in CUnit, not in the SSM library. These errors are not seen on Intel
+  systems.
+
+Perform code coverage test:
+
+  make gcov
+
+  This test unconditionally recompiles the SSM library and its unitary tests
+  with gcov support. The resulting SSM library is not usable in normal
+  applications. Run "make distclean" after finishing all gcov tests to
+  get back to a clean state.
+
+  The command "make gcov" shall end with the message "100% CODE COVERAGE".
+  If this is not the case, some code in the SSM library was not tested.
+  Update the unitary tests to make sure that all code in the SSM library
+  is tested.
+
+Run the cppcheck static code analyzer on the source tree:
+
+  make cppcheck
+
+Perform all tests that should pass before integrating the current source code:
+
+  make preintegration
+
+Display library code footprint:
+
+  make showcodesize
+
+  This test unconditionally recompiles the SSM library with optimization for
+  a smaller code size. Run "make distclean" after finishing this test to get
+  back to a clean state.
+
+Building the loadable kernel module demo:
+
+  make -C demos kernelmodule
+
+Building a tarball of the sources in parent directory:
+
+  make tarball
+
+Building all libraries, tests and demos on Windows using Visual C++ 2010:
+
+  Open solution "ssm" (double-click on msvc2010\ssm.sln from Windows Explorer).
+  Select "Debug" or "Release" configuration, then press F7. This has been
+  tested with the Microsoft Visual C++ 2010 Express Edition only.
+
+Specifying preprocessing macros for alternate code generations:
+
+  Some preprocessing symbols can be defined to select alternate code versions.
+  Use the variable CFLAGS_EXTRA on the "make" command line to define them.
+
+  Symbol: _SSM_USE_LIBC
+  Build command: make CFLAGS_EXTRA=-D_SSM_USE_LIBC
+
+  Description: If defined, use standard functions from the libc instead of
+  specific code from the SSM library when possible. Pros: faster optimized
+  implementation on some platforms. Cons: need to link with an existing libc.
+  Note that this option brings no improvement on Intel processors with the GNU
+  libc. On ARM processors with the GNU libc, there is some improvement. On
+  other platforms, you may have a try.
+
+  Symbol: _SSM_OPTIM_SIZE
+  Build command: make CFLAGS_EXTRA=-D_SSM_OPTIM_SIZE
+
+  Description: If defined, use a smaller but less efficient code. This is
+  automatically defined by "make showcodesize" and "make -C src optsize".
+
+  Symbol: _SSM_OPTIM_SPEED
+  Build command: make CFLAGS_EXTRA=-D_SSM_OPTIM_SPEED
+
+  Description: If defined, use a larger but more efficient code. This is the
+  default if none of the above symbols are defined, so the options on the
+  build command are not really necessary.

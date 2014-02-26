@@ -1,0 +1,142 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename ssm.info
+@documentencoding UTF-8
+@include version.texi
+@settitle SSM Library @value{VERSION}
+@c %**end of header
+
+@syncodeindex fn cp
+@syncodeindex pg cp
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex tp cp
+
+@afourpaper
+@setchapternewpage odd
+@firstparagraphindent insert
+
+@c Header for a function, macro or type.
+@macro ssmdef{name}
+@unnumberedsubsec @point{} @strong{@t{\name\}}
+@findex @t{\name\}
+@end macro
+
+@c Typical usage:
+@c 
+@c @ssmdef FUNCTION-NAME
+@c FUNCTION-SHORT-DESCRIPTION
+@c 
+@c @cartouche
+@c @example
+@c FUNCTION-DECLARATION
+@c @end example
+@c @end cartouche
+@c 
+@c @multitable @columnfractions .15 .10 .75
+@c @headitem Parameter @tab Mode @tab Description
+@c @item @var{PARAM-NAME} @tab in,out @tab PARAM-DESCRIPTION
+@c ....
+@c @item @tab return @tab RETURN-DESCRIPTION
+@c @end multitable
+@c 
+@c FUNCTION-FULL-DESCRIPTION
+
+@c Copyright information, will be inserted at @insertcopying.
+@copying
+This manual is for SSM (version @value{VERSION}, @value{UPDATED}),
+a Safe Strings and Memory buffers library for C.
+
+Copyright @copyright{} 2014 Thierry Lel@'egard
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+@end quotation
+@end copying
+
+@c For 'info' documentation set.
+@dircategory Software libraries
+@direntry
+* SSM: (ssm). Safe Strings and Memory buffers library for C.
+@end direntry
+
+@c Title page.
+@titlepage
+@title SSM (Safe Strings and Memory)
+@subtitle Library of Safe Strings and Memory buffers for the C language
+@subtitle Version @value{VERSION}, @value{UPDATED}
+@author Thierry Lel@'egard
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@c Content page.
+@contents
+
+@c Main structure for the 'info' command
+@ifnottex
+@node Top
+@top SSM, a library of Safe Strings and Memory buffers for the C language
+@end ifnottex
+
+@c Use 'C-c C-u m' to update the main menu in Emacs.
+@c Use 'C-c C-u C-m' to update a menu within a section in Emacs.
+
+@menu
+* Overview::
+* Common mechanisms::
+* Static strings::
+* Dynamic strings::
+* Static memory buffers::
+* Dynamic memory buffers::
+* Low-level mechanisms::
+* Index::
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Overview
+
+* The classical C strings library::
+* The SSM library::
+* SSM objects::
+* Using the SSM library::
+* Thread-safety::
+* Dynamic memory allocation::
+* Using "canary" runtime checks::
+* Supported platforms::
+* Code footprint::
+* License::
+
+Common mechanisms
+
+* SSM library identification::
+* Error reporting::
+* Addresses and sizes::
+* Dynamic memory management::
+
+Low-level mechanisms
+
+* Memory corruption detection::
+* Manipulating raw memory::
+
+@end detailmenu
+@end menu
+
+@include ssm_overview.texi
+@include ssm_common.texi
+@include ssm_sstring.texi
+@include ssm_dstring.texi
+@include ssm_sbuffer.texi
+@include ssm_dbuffer.texi
+@include ssm_lowlevel.texi
+
+@node Index
+@unnumbered Index
+@printindex cp
+@bye
