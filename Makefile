@@ -79,4 +79,7 @@ flawfinder-ssm:
 # Make a tarball of the current source tree
 .PHONY: tarball
 tarball:
-	tar czf ../ssm-$(SSM_VERSION).tgz $(patsubst %,--exclude '%',$(NOSOURCE) kernelmodule *.html *.info version.texi) -C .. $(notdir $(shell pwd))
+	tar czf ../ssm-$(SSM_VERSION).tgz \
+	    -C .. $(notdir $(shell pwd)) \
+	    --transform='s/^$(notdir $(shell pwd))/ssm-$(SSM_VERSION)/' \
+	    $(patsubst %,--exclude '%',$(NOSOURCE) kernelmodule *.html *.info version.texi)
