@@ -519,7 +519,7 @@ distclean: clean
 
 # List of file and directory patterns for non-source files.
 NOSOURCE = \
-    *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* doxy doxygen *.pdf *.t2d \
+    .git *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* doxy doxygen *.pdf *.t2d \
     *.o *.so *.ko *.a *.lib *.exe *.gcov *.dep .kdbgrc.* .tmp_versions \
     *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
     ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
