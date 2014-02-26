@@ -1,5 +1,5 @@
-*.html
-*.pdf
-*.info
+ssm*.html
+ssm*.pdf
+ssm*.info
 *.t2d
 version.texi
