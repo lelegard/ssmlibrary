@@ -18,5 +18,5 @@
 *.bz2
 *.sdf
 *.suo
-*.vcxproj.user
 *.opensdf
+*.vcxproj.user
