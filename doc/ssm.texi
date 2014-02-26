@@ -111,7 +111,6 @@ Overview
 * Using "canary" runtime checks::
 * Supported platforms::
 * Code footprint::
-* License::
 
 Common mechanisms
 

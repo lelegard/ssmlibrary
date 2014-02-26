@@ -28,23 +28,23 @@ NODEPS += doc
 
 INFILES := $(wildcard ssm*.texi)
 OUTFILES = ssm.info ssm.html ssm.pdf
-EXTRA_DISTCLEAN = $(OUTFILES) version.texi
+OUTFILES_VERSION = $(patsubst ssm.%,ssm-$(SSM_VERSION).%,$(OUTFILES))
+EXTRA_DISTCLEAN = $(patsubst ssm.%,ssm*.%,$(OUTFILES)) version.texi
 TEXI2HTML_FLAGS += --css-include=texinfo.css
-
-SSM_MAJOR_VERSION = $(shell grep "\#define *SSM_MAJOR_VERSION" ../include/ssm.h | head -1 | awk '{print $$3}')
-SSM_MINOR_VERSION = $(shell grep "\#define *SSM_MINOR_VERSION" ../include/ssm.h | head -1 | awk '{print $$3}')
 
 # No default target, use "make doc" explicitely.
 default:
 	@true
 
 # Generate the documentation in various formats.
-doc: $(OUTFILES)
+doc: $(OUTFILES_VERSION)
 $(OUTFILES): $(INFILES) version.texi texinfo.tex
 ssm.html: texinfo.css
 version.texi: ../include/ssm.h Makefile
 	@echo Rebuilding $@
 	@LANG=en_US echo >$@ "@set UPDATED $$(date +'%d %B %Y')"
 	@LANG=en_US echo >>$@ "@set UPDATED-MONTH $$(date +'%B %Y')"
-	@echo >>$@ "@set EDITION $(SSM_MAJOR_VERSION).$(SSM_MINOR_VERSION)"
-	@echo >>$@ "@set VERSION $(SSM_MAJOR_VERSION).$(SSM_MINOR_VERSION)"
+	@echo >>$@ "@set EDITION $(SSM_VERSION)"
+	@echo >>$@ "@set VERSION $(SSM_VERSION)"
+ssm-$(SSM_VERSION).%: ssm.%
+	cp $< $@

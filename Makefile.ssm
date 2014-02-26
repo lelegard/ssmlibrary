@@ -29,3 +29,7 @@ SSMSHLIB := $(ROOTDIR)/src/$(OBJDIR)/libssm.so
 CFLAGS_INCLUDES += -I$(ROOTDIR)/include
 CPPCHECK_FLAGS  += -I $(ROOTDIR)/include
 CFLAGS_OPTSIZE  += -D_SSM_OPTIM_SIZE=1
+
+SSM_MAJOR_VERSION = $(shell grep "\#define *SSM_MAJOR_VERSION" $(ROOTDIR)/include/ssm.h | head -1 | awk '{print $$3}')
+SSM_MINOR_VERSION = $(shell grep "\#define *SSM_MINOR_VERSION" $(ROOTDIR)/include/ssm.h | head -1 | awk '{print $$3}')
+SSM_VERSION       = $(SSM_MAJOR_VERSION).$(SSM_MINOR_VERSION)

@@ -3,6 +3,17 @@
 
 The SSM library provides safe functions for handling strings and memory buffers in C.
 
+This software is distributed under the terms of the GNU Lesser General Public License version 3.
+
+Its source code and documentation are available online:
+
+@itemize
+@item
+Home page: @url{http://ssmlibrary.sourceforge.net/}
+@item
+Project page: @url{http://sourceforge.net/projects/ssmlibrary/}
+@end itemize
+
 @menu
 * The classical C strings library::
 * The SSM library::
@@ -13,7 +24,6 @@ The SSM library provides safe functions for handling strings and memory buffers 
 * Using "canary" runtime checks::
 * Supported platforms::
 * Code footprint::
-* License::
 @end menu
 
 @node The classical C strings library
@@ -420,9 +430,3 @@ Some features use common code. Using two features usually requires less than
 the sum of the code for the two features.
 @end itemize
 @end itemize
-
-@node License
-@section License
-
-The SSM library is distributed under the terms of the
-GNU Lesser General Public License version 3.
