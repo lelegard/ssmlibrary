@@ -42,8 +42,8 @@ $(OUTFILES): $(INFILES) version.texi texinfo.tex
 ssm.html: texinfo.css
 version.texi: ../include/ssm.h Makefile
 	@echo Rebuilding $@
-	@LANG=en_US echo >$@ "@set UPDATED $$(date +'%d %B %Y')"
-	@LANG=en_US echo >>$@ "@set UPDATED-MONTH $$(date +'%B %Y')"
+	@echo >$@ "@set UPDATED $$(date +'%d %B %Y')"
+	@echo >>$@ "@set UPDATED-MONTH $$(date +'%B %Y')"
 	@echo >>$@ "@set EDITION $(SSM_VERSION)"
 	@echo >>$@ "@set VERSION $(SSM_VERSION)"
 ssm-$(SSM_VERSION).%: ssm.%

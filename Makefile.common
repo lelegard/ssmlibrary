@@ -333,6 +333,9 @@ first: default
 # Some nerds define exotic shells as default. Stay to a known shell.
 SHELL := /bin/bash
 
+# Enforce English locale by default.
+export LANG=en_US
+
 # Representation of a space and a comma character
 EMPTY =
 SPACE = $(EMPTY) $(EMPTY)
