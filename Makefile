@@ -26,36 +26,36 @@ include Makefile.ssm
 # By default, recurse make target in all subdirectories
 RECURSE_ORDER = src utests demos doc $(wildcard msvc*)
 default:
-	@$(RECURSE)
+	+@$(RECURSE)
 
 # Run the unitary tests.
 .PHONY: test test-debug valgrind valgrind-debug
 test valgrind:
-	@$(MAKE) -C src
-	@$(MAKE) -C utests $@
+	+@$(MAKE) -C src
+	+@$(MAKE) -C utests $@
 test-debug valgrind-debug:
-	@$(MAKE) DEBUG=TRUE -C src
-	@$(MAKE) DEBUG=TRUE -C utests $(subst -debug,,$@)
+	+@$(MAKE) DEBUG=TRUE -C src
+	+@$(MAKE) DEBUG=TRUE -C utests $(subst -debug,,$@)
 
 # Perform coverage tests.
 .PHONY: gcov
 gcov:
-	$(MAKE) DEBUG=true GCOV=true -C src clean
-	$(MAKE) DEBUG=true GCOV=true -C src
-	$(MAKE) DEBUG=true GCOV=true -C utests clean
-	$(MAKE) DEBUG=true GCOV=true -C utests test-static test-crash-static
-	$(MAKE) DEBUG=true GCOV=true -C src gcov
+	+$(MAKE) DEBUG=true GCOV=true -C src clean
+	+$(MAKE) DEBUG=true GCOV=true -C src
+	+$(MAKE) DEBUG=true GCOV=true -C utests clean
+	+$(MAKE) DEBUG=true GCOV=true -C utests test-static test-crash-static
+	+$(MAKE) DEBUG=true GCOV=true -C src gcov
 
 # Show code footprint.
 .PHONY: showcodesize
 showcodesize:
-	$(MAKE) -C src clean
-	$(MAKE) -C src optsize showcodesize
+	+$(MAKE) -C src clean
+	+$(MAKE) -C src optsize showcodesize
 
 # Generate the documentation.
 .PHONY: doc
 doc:
-	@$(MAKE) -C doc doc
+	+@$(MAKE) -C doc doc
 
 # Perform all tests that should succeed before integrating the current code state.
 .PHONY: preintegration

@@ -397,7 +397,7 @@ endif
 # Alternate target to recompile with debug options
 .PHONY: debug
 debug:
-	@$(MAKE) DEBUG=true
+	+@$(MAKE) DEBUG=true
 
 # Compilation flags for various types of optimization.
 CFLAGS_OPTIMIZE ?= -O2 -fno-strict-aliasing
@@ -407,7 +407,7 @@ CFLAGS_OPTSIZE   = -Os -fno-strict-aliasing
 # Alternate target to recompile with optimizations for reduced code size.
 .PHONY: optsize
 optsize:
-	@$(MAKE) CFLAGS_OPTIMIZE="$(CFLAGS_OPTSIZE)"
+	+@$(MAKE) CFLAGS_OPTIMIZE="$(CFLAGS_OPTSIZE)"
 
 # Include paths for C++ also use include paths for C.
 CXXFLAGS_INCLUDES += $(CFLAGS_INCLUDES)
@@ -511,14 +511,14 @@ clean:
 	    *.o *.ko *.a *.gcov *.dep *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
 	    $(OBJDIR)/*.o $(OBJDIR)/*.ko $(OBJDIR)/*.a $(OBJDIR)/*.dep $(OBJDIR)/*.tmp $(OBJDIR)/*.out \
 	    $(OBJDIR)/*.log $(OBJDIR)/*.tlog $(OBJDIR)/core $(OBJDIR)/core.* $(OBJDIR)/vgcore.*
-	@$(RECURSE)
+	+@$(RECURSE)
 distclean: clean
 	@echo '  [DISTCLEAN] $(CURDIR)'; \
 	rm -rf $(EXTRA_DISTCLEAN) [Dd]ebug* [Rr]elease* ipch *.exe *.so .kdbgrc.* *.t2d \
 	    *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
 	    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
 	    .tmp_versions
-	@$(RECURSE)
+	+@$(RECURSE)
 
 # List of file and directory patterns for non-source files.
 NOSOURCE = \

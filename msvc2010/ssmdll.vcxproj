@@ -44,7 +44,9 @@
     <ClCompile Include="..\src\ssm_dbuffer_set_range_canary.c" />
     <ClCompile Include="..\src\ssm_dstring_import_size.c" />
     <ClCompile Include="..\src\ssm_dstring_import_size_canary.c" />
+    <ClCompile Include="..\src\ssm_memmove_s.c" />
     <ClCompile Include="..\src\ssm_memory_management.c" />
+    <ClCompile Include="..\src\ssm_memset_s.c" />
     <ClCompile Include="..\src\ssm_sbuffer_check.c" />
     <ClCompile Include="..\src\ssm_sbuffer_check_canary.c" />
     <ClCompile Include="..\src\ssm_sbuffer_compare.c" />
@@ -68,6 +70,12 @@
     <ClCompile Include="..\src\ssm_sstring_import_size.c" />
     <ClCompile Include="..\src\ssm_sstring_import_size_canary.c" />
     <ClCompile Include="..\src\ssm_status_string.c" />
+    <ClCompile Include="..\src\ssm_strcat_s.c" />
+    <ClCompile Include="..\src\ssm_strcpy_s.c" />
+    <ClCompile Include="..\src\ssm_strerror_s.c" />
+    <ClCompile Include="..\src\ssm_strncat_s.c" />
+    <ClCompile Include="..\src\ssm_strncpy_s.c" />
+    <ClCompile Include="..\src\ssm_strnlen_s.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1AD31049-26B0-4922-89CF-778040DFC51E}</ProjectGuid>
