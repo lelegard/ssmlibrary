@@ -67,6 +67,7 @@
     <ClCompile Include="..\src\ssm_set.c" />
     <ClCompile Include="..\src\ssm_sstring_import_size.c" />
     <ClCompile Include="..\src\ssm_sstring_import_size_canary.c" />
+    <ClCompile Include="..\src\ssm_status_string.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{25A6CE1B-83F7-4859-A1EA-B7A8EAFFD2C6}</ProjectGuid>

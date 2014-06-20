@@ -23,6 +23,12 @@
 @findex @t{\name\}
 @end macro
 
+@macro ssmdefd{name1,name2}
+@unnumberedsubsec @point{} @strong{@t{\name1\}} and @strong{@t{\name2\}}
+@findex @t{\name1\}
+@findex @t{\name2\}
+@end macro
+
 @c Typical usage:
 @c 
 @c @ssmdef FUNCTION-NAME
@@ -95,6 +101,7 @@ Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
 * Static memory buffers::
 * Dynamic memory buffers::
 * Low-level mechanisms::
+* Subset of C11 Annex K::
 * Index::
 
 @detailmenu
@@ -124,6 +131,12 @@ Low-level mechanisms
 * Memory corruption detection::
 * Manipulating raw memory::
 
+Subset of C11 Annex K
+
+* C11 Annex K Overview::
+* C11 Annex K Support::
+* C11 Annex K Reference::
+
 @end detailmenu
 @end menu
 
@@ -134,6 +147,7 @@ Low-level mechanisms
 @include ssm_sbuffer.texi
 @include ssm_dbuffer.texi
 @include ssm_lowlevel.texi
+@include ssm_c11k.texi
 
 @node Index
 @unnumbered Index

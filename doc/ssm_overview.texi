@@ -109,7 +109,11 @@ Each function has a specific behavior and must be surrounded by distinct
 user-written checks every time. In other words, using the @code{'n'} functions
 is very error-prone and they should be banned as well.
 
-More generally, the @code{'n'} functions have the same fundamental flaw as the
+With the C11 language standard, an optional set of @code{'_s'} functions was
+introduced. Their API is slightly better defined and more consistent than for the
+@code{'n'} functions. See @ref{C11 Annex K Overview} for more details.
+
+More generally, the @code{'n'} and @code{'_s'} functions have the same fundamental flaw as the
 classical string functions, their abstraction level is very low. The concepts of
 @emph{string} or @emph{buffer} do not exist. These functions manipulate addresses
 and sizes independently. Providing the correct size at the right time is entirely

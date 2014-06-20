@@ -20,6 +20,8 @@
  *  Modification history:
  *    2014-01-06 Thierry Lelegard
  *               Original creation.
+ *    2014-06-20 Thierry Lelegard
+ *               Added ssm_dstring_status_string test.
  *
  *-----------------------------------------------------------------------------
  */
@@ -527,6 +529,35 @@ static void test_trashed (void)
     CU_ASSERT (strcmp(ssm_dstring_chars(&s2), "") == 0);
 }
 
+static void test_status_string (void)
+{
+    int i;
+    ssm_dstring_declare (s);
+
+    for (i = 0; i < 256; i++) {
+        const ssm_status_t status = (ssm_status_t)i;
+        const char* msg;
+
+        CU_ASSERT (ssm_dstring_status_string(&s, status) == SSM_OK);
+        msg = ssm_dstring_chars(&s);
+
+        switch (status) {
+        case SSM_OK:           CU_ASSERT_STRING_EQUAL (msg, "The function executed successfully"); break;
+        case SSM_TRUNCATED:    CU_ASSERT_STRING_EQUAL (msg, "The result is truncated but safe"); break;
+        case SSM_EQUAL:        CU_ASSERT_STRING_EQUAL (msg, "Objects are equal after comparison"); break;
+        case SSM_LOWER:        CU_ASSERT_STRING_EQUAL (msg, "Object 1 is lower than object 2 after comparison"); break;
+        case SSM_GREATER:      CU_ASSERT_STRING_EQUAL (msg, "Object 1 is greater than object 2 after comparison"); break;
+        case SSM_NULLOUT:      CU_ASSERT_STRING_EQUAL (msg, "A NULL pointer was provided as output parameter"); break;
+        case SSM_SIZETOOLARGE: CU_ASSERT_STRING_EQUAL (msg, "Some size is larger than SSM_SIZE_MAX"); break;
+        case SSM_INDEXRANGE:   CU_ASSERT_STRING_EQUAL (msg, "An index parameter in out of range"); break;
+        case SSM_NOMEMORY:     CU_ASSERT_STRING_EQUAL (msg, "Memory allocation failure, result is unchanged"); break;
+        case SSM_CORRUPTED:    CU_ASSERT_STRING_EQUAL (msg, "Memory was previously corrupted, result is undefined but safe"); break;
+        case SSM_BUG:          CU_ASSERT_STRING_EQUAL (msg, "Internal inconsistency, there is a bug in the SSM library"); break;
+        default:               CU_ASSERT_STRING_EQUAL (msg, "Unknown"); break;
+        }
+    }
+}
+
 /*
  * Add the tests in this module in a specified test suite.
  */
@@ -546,6 +577,7 @@ static void ssm_dstring_add_tests(CU_pSuite suite)
     CU_ADD_TEST (suite, test_compare);
     CU_ADD_TEST (suite, test_struct);
     CU_ADD_TEST (suite, test_trashed);
+    CU_ADD_TEST (suite, test_status_string);
 }
 
 /*

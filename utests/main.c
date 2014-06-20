@@ -39,6 +39,7 @@
 #include "ssm_sbuffer_canary_test.h"
 #include "ssm_dbuffer_test.h"
 #include "ssm_dbuffer_canary_test.h"
+#include "ssm_c11k_test.h"
 
 int main(int argc, char* argv[])
 {
@@ -59,6 +60,7 @@ int main(int argc, char* argv[])
         ssm_sbuffer_canary_test_init,
         ssm_dbuffer_test_init,
         ssm_dbuffer_canary_test_init,
+        ssm_c11k_test_init,
         NULL,
     };
     return utests_main(argc, argv, "SSM", init_functions);

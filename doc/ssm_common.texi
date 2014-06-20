@@ -201,6 +201,27 @@ was incorrect. In that case, the output objects (if any) are not
 modified and the application may continue after performing the
 adequate error processing.
 
+@ssmdef ssm_status_string
+Get a null-terminated string describing a status value.
+
+@cartouche
+@example
+const char* ssm_status_string (ssm_status_t @var{status});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{status} @tab in @tab A status to get the description of.
+@item @tab return @tab
+Address of a static constant null-terminated string describing @var{status}.
+@end multitable
+
+All calls with the same @var{status} return the same address.
+The pointed string shall not be modified by the application.
+Any @var{status} which does not correspond to a known value will return
+the same @code{"Unknown"} string.
+
 @node Addresses and sizes
 @section Addresses and sizes
 

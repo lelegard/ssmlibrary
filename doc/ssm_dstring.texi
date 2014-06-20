@@ -360,3 +360,24 @@ ssm_status_t ssm_dstring_compare (const ssm_dstring_t* @var{buf1},
 according to whether the first string is greater than, equal to or less than
 the second string. Can also be an error code.
 @end multitable
+
+@ssmdef ssm_dstring_status_string
+Get the description of a status value in a @code{ssm_dstring_t}.
+
+@cartouche
+@example
+ssm_status_t ssm_dstring_status_string (ssm_dstring_t* @var{dest},
+                                        ssm_status_t @var{status});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{dest} @tab out @tab Receive the description string.
+@item @var{status} @tab in @tab A status to get the description of.
+@item @tab return @tab A status value.
+@end multitable
+
+All calls with the same @var{status} return the same description string.
+Any @var{status} which does not correspond to a known value will return
+the same @code{"Unknown"} string.

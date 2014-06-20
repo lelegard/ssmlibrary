@@ -73,6 +73,9 @@
     <ClCompile Include="..\utests\ssm_memory_compare_test.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\utests\ssm_c11k_test.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\utests\ssm_platform_test.h">
@@ -124,6 +127,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\utests\ssm_memory_compare_test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\utests\ssm_c11k_test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

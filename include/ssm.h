@@ -36,12 +36,35 @@
  *               Original creation.
  *    2014-01-17 Thierry Lelegard
  *               Reimplement strings over memory buffers.
+ *    2014-06-20 Thierry Lelegard
+ *               Added some '_s' functions from C11 Annex K (C11K).
  *
  *-----------------------------------------------------------------------------
  */
 
 #if !defined(_SSM_H)
 #define _SSM_H 1
+
+/*
+ * If the application wants to use our subset of C11 Annex K, deactive the
+ * corresponding declarations from the standard headers.
+ */
+#if defined(SSM_C11K)
+    /* Microsoft C legacy symbol */
+    #if defined(__STDC_WANT_SECURE_LIB__) && __STDC_WANT_SECURE_LIB__ != 0
+        #undef __STDC_WANT_SECURE_LIB__
+    #endif
+    #if !defined(__STDC_WANT_SECURE_LIB__)
+        #define __STDC_WANT_SECURE_LIB__ 0
+    #endif
+    /* C11 standard symbol */
+    #if defined(__STDC_WANT_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ != 0
+        #undef __STDC_WANT_LIB_EXT1__
+    #endif
+    #if !defined(__STDC_WANT_LIB_EXT1__)
+        #define __STDC_WANT_LIB_EXT1__ 0
+    #endif
+#endif
 
 /*
  * Required external definitions are limited to
@@ -64,7 +87,7 @@
  * SSM library version.
  */
 #define SSM_MAJOR_VERSION   1
-#define SSM_MINOR_VERSION   0
+#define SSM_MINOR_VERSION   1
 #define SSM_VERSION         ((100 * SSM_MAJOR_VERSION) + SSM_MINOR_VERSION)
 #define SSM_VERSION_STRING  _SSM_STRINGIFY(SSM_MAJOR_VERSION) "." _SSM_STRINGIFY(SSM_MINOR_VERSION)
 
@@ -150,6 +173,11 @@ typedef enum {
 #define ssm_success(status) (((int)(status) & 0x40) == 0)
 #define ssm_error(status)   (((int)(status) & 0x40) != 0)
 #define ssm_fatal(status)   (((int)(status) & 0x80) != 0)
+
+/*
+ * A static string describing an error ("Uknown" if unknown status value).
+ */
+_SSMAPI const char* ssm_status_string(ssm_status_t status);
 
 /*
  * Size and address limits.
@@ -289,7 +317,7 @@ _SSMAPI ssm_status_t _SSM_CANARY_SYMBOL(_ssm_sbuffer_resize) (ssm_sbuffer_t* buf
 
 #define ssm_sbuffer_set_range(buf,start,length,value) \
     _SSM_CANARY_SYMBOL(_ssm_sbuffer_set_range) ((buf), (start), (length), (value) _SSM_CANARY_ARG_APP)
-_SSMAPI ssm_status_t _SSM_CANARY_SYMBOL(_ssm_sbuffer_set_range) \
+_SSMAPI ssm_status_t _SSM_CANARY_SYMBOL(_ssm_sbuffer_set_range)
     (ssm_sbuffer_t* buf, size_t start, size_t length, uint8_t value _SSM_CANARY_ARG_DECL);
 
 #define ssm_sbuffer_set(buf,value) _ssm_sbuffer_set((buf), (value) _SSM_CANARY_ARG_APP)
@@ -367,7 +395,7 @@ _SSMAPI ssm_status_t _SSM_CANARY_SYMBOL(_ssm_dbuffer_resize) (ssm_dbuffer_t* buf
 
 #define ssm_dbuffer_set_range(buf,start,length,value) \
     _SSM_CANARY_SYMBOL(_ssm_dbuffer_set_range) ((buf), (start), (length), (value) _SSM_CANARY_ARG_APP)
-_SSMAPI ssm_status_t _SSM_CANARY_SYMBOL(_ssm_dbuffer_set_range) \
+_SSMAPI ssm_status_t _SSM_CANARY_SYMBOL(_ssm_dbuffer_set_range)
     (ssm_dbuffer_t* buf, size_t start, size_t length, uint8_t value _SSM_CANARY_ARG_DECL);
 
 #define ssm_dbuffer_set(buf,value) _ssm_dbuffer_set((buf), (value) _SSM_CANARY_ARG_APP)
@@ -419,11 +447,12 @@ static inline ssm_status_t ssm_sstring_import(ssm_sstring_t* dest, const char* s
 #define ssm_sstring_chars(str) ((const char*)(ssm_sbuffer_data(&(str)->_buf)))
 #define ssm_sstring_length(str) ssm_sbuffer_length(&(str)->_buf)
 #define ssm_sstring_max_length(str) ssm_sbuffer_max_length(&(str)->_buf)
-#define ssm_sstring_set_range(str,start,length,value) ssm_sbuffer_set_range(&(str)->_buf,(start),(length),(uint8_t)(value)) 
-#define ssm_sstring_set(str,value) ssm_sbuffer_set(&(str)->_buf,(uint8_t)(value)) 
+#define ssm_sstring_set_range(str,start,length,value) ssm_sbuffer_set_range(&(str)->_buf,(start),(length),(uint8_t)(value))
+#define ssm_sstring_set(str,value) ssm_sbuffer_set(&(str)->_buf,(uint8_t)(value))
 #define ssm_sstring_copy(dest,src) ssm_sbuffer_copy(&(dest)->_buf, &(src)->_buf)
 #define ssm_sstring_concat(dest,src) ssm_sbuffer_concat(&(dest)->_buf, &(src)->_buf)
 #define ssm_sstring_compare(str1,str2) ssm_sbuffer_compare(&(str1)->_buf, &(str2)->_buf)
+#define ssm_sstring_status_string(dest,status) ssm_sstring_import(dest, ssm_status_string(status))
 
 
 /*-----------------------------------------------------------------------------
@@ -440,18 +469,58 @@ typedef struct {
 
 #define ssm_dstring_import_size(dest,src,maxSize) \
     _SSM_CANARY_SYMBOL(_ssm_dstring_import_size) ((dest), (src), (maxSize) _SSM_CANARY_ARG_APP)
-_SSMAPI ssm_status_t _SSM_CANARY_SYMBOL(_ssm_dstring_import_size) \
+_SSMAPI ssm_status_t _SSM_CANARY_SYMBOL(_ssm_dstring_import_size)
     (ssm_dstring_t* dest, const char* src, size_t maxSize _SSM_CANARY_ARG_DECL);
 
 #define ssm_dstring_import(dest,src) ssm_dstring_import_size((dest), (src), SSM_SIZE_MAX)
 #define ssm_dstring_free(str) ssm_dbuffer_free(&(str)->_buf)
 #define ssm_dstring_chars(str) ((const char*)(ssm_dbuffer_data(&(str)->_buf)))
 #define ssm_dstring_length(str) ssm_dbuffer_length(&(str)->_buf)
-#define ssm_dstring_set_range(str,start,length,value) ssm_dbuffer_set_range(&(str)->_buf,(start),(length),(uint8_t)(value)) 
-#define ssm_dstring_set(str,value) ssm_dbuffer_set(&(str)->_buf,(uint8_t)(value)) 
+#define ssm_dstring_set_range(str,start,length,value) ssm_dbuffer_set_range(&(str)->_buf,(start),(length),(uint8_t)(value))
+#define ssm_dstring_set(str,value) ssm_dbuffer_set(&(str)->_buf,(uint8_t)(value))
 #define ssm_dstring_copy(dest,src) ssm_dbuffer_copy(&(dest)->_buf, &(src)->_buf)
 #define ssm_dstring_concat(dest,src) ssm_dbuffer_concat(&(dest)->_buf, &(src)->_buf)
 #define ssm_dstring_compare(str1,str2) ssm_dbuffer_compare(&(str1)->_buf, &(str2)->_buf)
+#define ssm_dstring_status_string(dest,status) ssm_dstring_import(dest, ssm_status_string(status))
+
+
+/*-----------------------------------------------------------------------------
+ * SUBSET OF C11 ANNEX K ("BOUND-CHECKING INTERFACES")
+ *-----------------------------------------------------------------------------
+ */
+
+typedef int ssm_errno_t;
+typedef size_t ssm_rsize_t;
+#define SSM_RSIZE_MAX ((size_t)SSM_SIZE_MAX)
+
+#define ssm_memcpy_s(s1,s1max,s2,n) ssm_memmove_s(s1,s1max,s2,n)
+_SSMAPI ssm_errno_t ssm_memmove_s(void* s1, ssm_rsize_t s1max, const void* s2, ssm_rsize_t n);
+_SSMAPI ssm_errno_t ssm_strcpy_s(char* s1, ssm_rsize_t s1max, const char* s2);
+_SSMAPI ssm_errno_t ssm_strncpy_s(char* s1, ssm_rsize_t s1max, const char* s2, ssm_rsize_t n);
+_SSMAPI ssm_errno_t ssm_strcat_s(char* s1, ssm_rsize_t s1max, const char* s2);
+_SSMAPI ssm_errno_t ssm_strncat_s(char* s1, ssm_rsize_t s1max, const char* s2, ssm_rsize_t n);
+_SSMAPI ssm_errno_t ssm_memset_s(void* s, ssm_rsize_t smax, int c, ssm_rsize_t n);
+_SSMAPI ssm_errno_t ssm_strerror_s(char* s, ssm_rsize_t maxsize, ssm_errno_t errnum);
+_SSMAPI size_t ssm_strerrorlen_s(ssm_errno_t errnum);
+_SSMAPI size_t ssm_strnlen_s(const char* s, size_t maxsize);
+
+#if defined(SSM_C11K) && defined(RSIZE_MAX)
+#error "C11 Annex K functions are already provided by another implementation"
+#elif defined(SSM_C11K)
+typedef ssm_errno_t errno_t;                                          /* C11 K.3.2 */
+typedef ssm_rsize_t rsize_t;                                          /* C11 K.3.3 */
+#define RSIZE_MAX SSM_RSIZE_MAX                                       /* C11 K.3.4 */
+#define memcpy_s(s1,s1max,s2,n)      ssm_memcpy_s(s1,s1max,s2,n)      /* C11 K.3.7.1.1 */
+#define memmove_s(s1,s1max,s2,n)     ssm_memmove_s(s1,s1max,s2,n)     /* C11 K.3.7.1.2 */
+#define strcpy_s(s1,s1max,s2)        ssm_strcpy_s(s1,s1max,s2)        /* C11 K.3.7.1.3 */
+#define strncpy_s(s1,s1max,s2,n)     ssm_strncpy_s(s1,s1max,s2,n)     /* C11 K.3.7.1.4 */
+#define strcat_s(s1,s1max,s2)        ssm_strcat_s(s1,s1max,s2)        /* C11 K.3.7.2.1 */
+#define strncat_s(s1,s1max,s2,n)     ssm_strncat_s(s1,s1max,s2,n)     /* C11 K.3.7.2.2 */
+#define memset_s(s,smax,c,n)         ssm_memset_s(s,smax,c,n)         /* C11 K.3.7.4.1 */
+#define strerror_s(s,maxsize,errnum) ssm_strerror_s(s,maxsize,errnum) /* C11 K.3.7.4.2 */
+#define strerrorlen_s(errnum)        ssm_strerrorlen_s(errnum)        /* C11 K.3.7.4.3 */
+#define strlen_s(s,maxsize)          ssm_strlen_s(s,maxsize)          /* C11 K.3.7.4.4 */
+#endif
 
 #if defined(__cplusplus)
 }

@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\utests\main.c" />
+    <ClCompile Include="..\utests\ssm_c11k_test.c" />
     <ClCompile Include="..\utests\ssm_memory_compare_test.c" />
     <ClCompile Include="..\utests\ssm_memory_set_test.c" />
     <ClCompile Include="..\utests\ssm_platform_test.c" />
@@ -31,6 +32,7 @@
     <ClCompile Include="..\utests\utests.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\utests\ssm_c11k_test.h" />
     <ClInclude Include="..\utests\ssm_memory_compare_test.h" />
     <ClInclude Include="..\utests\ssm_memory_set_test.h" />
     <ClInclude Include="..\utests\ssm_platform_test.h" />

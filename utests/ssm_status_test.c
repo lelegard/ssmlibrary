@@ -18,6 +18,8 @@
  *  Modification history:
  *    2014-01-10 Thierry Lelegard
  *               Original creation.
+ *    2014-06-20 Thierry Lelegard
+ *               Added ssm_status_string test.
  *
  *-----------------------------------------------------------------------------
  */
@@ -67,6 +69,30 @@ static void test_fatal(void)
     CU_ASSERT (ssm_fatal(SSM_BUG));
 }
 
+static void test_strings(void)
+{
+    int i;
+    for (i = 0; i < 256; i++) {
+        const ssm_status_t status = (ssm_status_t)i;
+        const char* msg = ssm_status_string(status);
+        CU_ASSERT_PTR_NOT_NULL(msg);
+        switch (status) {
+        case SSM_OK:           CU_ASSERT_STRING_EQUAL (msg, "The function executed successfully"); break;
+        case SSM_TRUNCATED:    CU_ASSERT_STRING_EQUAL (msg, "The result is truncated but safe"); break;
+        case SSM_EQUAL:        CU_ASSERT_STRING_EQUAL (msg, "Objects are equal after comparison"); break;
+        case SSM_LOWER:        CU_ASSERT_STRING_EQUAL (msg, "Object 1 is lower than object 2 after comparison"); break;
+        case SSM_GREATER:      CU_ASSERT_STRING_EQUAL (msg, "Object 1 is greater than object 2 after comparison"); break;
+        case SSM_NULLOUT:      CU_ASSERT_STRING_EQUAL (msg, "A NULL pointer was provided as output parameter"); break;
+        case SSM_SIZETOOLARGE: CU_ASSERT_STRING_EQUAL (msg, "Some size is larger than SSM_SIZE_MAX"); break;
+        case SSM_INDEXRANGE:   CU_ASSERT_STRING_EQUAL (msg, "An index parameter in out of range"); break;
+        case SSM_NOMEMORY:     CU_ASSERT_STRING_EQUAL (msg, "Memory allocation failure, result is unchanged"); break;
+        case SSM_CORRUPTED:    CU_ASSERT_STRING_EQUAL (msg, "Memory was previously corrupted, result is undefined but safe"); break;
+        case SSM_BUG:          CU_ASSERT_STRING_EQUAL (msg, "Internal inconsistency, there is a bug in the SSM library"); break;
+        default:               CU_ASSERT_STRING_EQUAL (msg, "Unknown"); break;
+        }
+    }
+}
+
 /*
  * Test suite initialization function.
  * Returns zero on success, non-zero on error.
@@ -96,4 +122,5 @@ void ssm_status_test_init(void)
     CU_ADD_TEST (suite, test_success);
     CU_ADD_TEST (suite, test_error);
     CU_ADD_TEST (suite, test_fatal);
+    CU_ADD_TEST (suite, test_strings);
 }

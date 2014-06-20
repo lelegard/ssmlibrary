@@ -20,3 +20,4 @@
 *.suo
 *.opensdf
 *.vcxproj.user
+ipch

@@ -1,0 +1,486 @@
+@node Subset of C11 Annex K
+@chapter Subset of C11 Annex K (Bound-Checking Interfaces)
+
+@menu
+* C11 Annex K Overview::
+* C11 Annex K Support::
+* C11 Annex K Reference::
+@end menu
+
+@node C11 Annex K Overview
+@section C11 Annex K Overview
+
+The problems of the unsafe C string functions from the C-library have been known
+for a long time in the C community. Amongst the various @emph{safer-but-not-so-safe}
+alternatives to these functions, the Annex K of the C11 standard defines a list
+of string handling functions with ``bound-checking interfaces''.
+
+In the rest of this chapter, we will use the notation ``C11K'' to designate
+this annex. Since the names of the C11K functions end with @code{_s}, they are
+also often called the ``@code{_s} functions''.
+
+Why using these @code{_s} functions when we have the SSM library? It is often
+necessary to interface with legacy code which manipulates strings and memory buffers
+using @emph{address} and @emph{size}. While new code can use high-level objects from
+the SSM library, these high-level objects must be imported or exported as raw
+@emph{address} and @emph{size} pairs to interface with legacy code. When there is
+some need to manipulate memory using @emph{address} and @emph{size} pairs in the
+``glue'' code between the new and legacy code, the C11K functions are a reasonable
+alternative to the old unsafe functions.
+
+However, the C11 standard states that the Annex K is optional. In fact, most C11
+implementations, including the GNU C library, do not include the @code{_s} functions
+@footnote{The fact that the @code{_s} functions were originally defined by Microsoft
+as a proprietary extension is a common explanation.}.
+As a workaround, the SSM library implements a subset of the C11K functions.
+
+@node C11 Annex K Support
+@section C11 Annex K Support
+
+The subset of the C11K which is implemented in the SSM library provides the
+basic services to manipulate strings and memory buffers. There is no support for
+higher-level services which are defined in C11K, namely file handing services,
+multi-bytes character strings or sorting functions.
+
+The following table lists the C11K subset which is supported in the SSM library.
+
+@multitable {@code{RSIZE_MAX}} {C11K Reference} {@code{strerrorlen_s}} {C11K Reference}
+@headitem Declaration   @tab C11 Reference  @tab Declaration   @tab C11 Reference
+@item @code{errno_t}    @tab K.3.2          @tab @code{strcat_s}      @tab K.3.7.2.1
+@item @code{rsize_t}    @tab K.3.3          @tab @code{strncat_s}     @tab K.3.7.2.2
+@item @code{RSIZE_MAX}  @tab K.3.4          @tab @code{memset_s}      @tab K.3.7.4.1
+@item @code{memcpy_s}   @tab K.3.7.1.1      @tab @code{strerror_s}    @tab K.3.7.4.2
+@item @code{memmove_s}  @tab K.3.7.1.2      @tab @code{strerrorlen_s} @tab K.3.7.4.3
+@item @code{strcpy_s}   @tab K.3.7.1.3      @tab @code{strlen_s}      @tab K.3.7.4.4
+@item @code{strncpy_s}  @tab K.3.7.1.4      @tab                      @tab 
+@end multitable
+@*
+
+Please also note the following precisions or restrictions concerning the C11K subset
+in the SSM library, compared to the C11 standard:
+
+@itemize
+@item
+C11K specifies that the @code{_s} functions are defined in the various standard headers.
+In the SSM library, they are defined in @file{ssm.h}.
+@item
+C11K specifies that the @code{_s} functions may optionally set @code{errno} on error.
+The SSM library does not set @code{errno}.
+@item
+C11K specifies that the @code{_s} functions return @code{errno_t} values but no
+precise value is defined for any error case. The only requirement is that zero
+is returned on success. The @code{_s} functions from the SSM library return
+@code{errno_t} values which are numerically identical to the @code{ssm_status_t}
+enumeration values. This is compatible whith the C11K standard since @code{SSM_OK}
+is zero.
+@item
+There is no support for ``runtime-constraint handlers''.
+The function @code{set_constraint_handler_s} is not provided.
+@end itemize
+
+@ssmdef SSM_C11K
+To be defined in the application to enable the standard naming from C11K.
+@cartouche
+@example
+#define SSM_C11K
+#include "ssm.h"
+@end example
+@end cartouche
+
+To avoid any interference with another implementation of C11K which could be used
+in other modules of the application, all defined symbols follow the SSM naming rules:
+they start with the prefix @code{ssm_} (functions) or @code{SSM_} (constants).
+For instance, the function @code{strcpy_s} is in fact @code{ssm_strcpy_s}.
+
+To write ``standard'' C11 code, define the symbol @code{SSM_C11K} before
+including @file{ssm.h}, either as a project option (when possible by the
+development tools) or in the source file as illustrated above.
+
+When @code{SSM_C11K} is defined, the standard C11K names are defined as macros.
+Thus, the function @code{strcpy_s} becomes available.
+
+@node C11 Annex K Reference
+@section C11 Annex K Reference
+
+This chapter describes the @code{_s} functions which are implemented in the SSM library.
+This is mainly a copy from the C11 standard (ISO/IEC 9899:2011) Annex K.
+
+@ssmdefd{ssm_errno_t,errno_t}
+A integer type for error codes.
+@cartouche
+@example
+typedef int ssm_errno_t;
+typedef int     errno_t;  /* with SSM_C11K */
+@end example
+@end cartouche
+
+C11K adds this type for clarity and specifies it as @code{int}.
+The usual error codes in the C library use @code{int} directly.
+It is redefined in SSM since it is part of most C11K function profiles.
+
+@ssmdefd{ssm_rsize_t,rsize_t}
+An integer type for data sizes.
+@cartouche
+@example
+typedef size_t ssm_rsize_t;
+typedef size_t     rsize_t;  /* with SSM_C11K */
+@end example
+@end cartouche
+
+C11K specifies this type as @code{size_t}.
+It is unclear why this was necessary.
+It is redefined in SSM since it is part of most C11K function profiles.
+
+@ssmdefd{SSM_RSIZE_MAX,RSIZE_MAX}
+Maximum size of strings and memory buffers.
+@cartouche
+@example
+#define SSM_RSIZE_MAX  ((size_t)SSM_SIZE_MAX)
+#define     RSIZE_MAX  ((size_t)SSM_SIZE_MAX)  /* with SSM_C11K */
+@end example
+@end cartouche
+
+C11K specifies @code{RSIZE_MAX} with the same semantics as @code{SSM_SIZE_MAX}, a simple
+and pragmatic way of detecting incorrectly computed sizes.
+The only difference is that @code{RSIZE_MAX} must expand to a value of type @code{size_t}.
+It is unclear why C11K specifies it as @code{size_t} and not @code{rsize_t}, both types
+being equivalent in fact.
+
+@ssmdefd{ssm_memmove_s,memmove_s}
+Copy a memory area.
+@cartouche
+@example
+ssm_errno_t ssm_memmove_s (void* @var{s1}, ssm_rsize_t @var{s1max},
+                           const void* @var{s2}, ssm_rsize_t @var{n});
+
+errno_t memmove_s (void* @var{s1}, rsize_t @var{s1max}, const void* @var{s2}, rsize_t @var{n});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{s1} @tab out @tab Destination buffer. Cannot be @code{NULL}.
+@item @var{s1max} @tab in @tab Maximum size of the destination buffer.
+Cannot be greater than @code{RSIZE_MAX}.
+@item @var{s2} @tab in @tab Source buffer. Cannot be @code{NULL}.
+@item @var{n} @tab in @tab Number of bytes to copy.
+Cannot be greater than @var{s1max}.
+@item @tab return @tab A status value.
+@end multitable
+
+The @code{memmove_s} function copies @var{n} characters from the object pointed to by @var{s2} into the
+object pointed to by @var{s1}. This copying takes place as if the @var{n} characters from the object
+pointed to by @var{s2} are first copied into a temporary array of @var{n} characters that does not
+overlap the objects pointed to by @var{s1} or @var{s2}, and then the @var{n} characters from the temporary
+array are copied into the object pointed to by @var{s1}.
+
+If there is a runtime-constraint violation, the @code{memmove_s} function stores zeros in the
+first @var{s1max} characters of the object pointed to by @var{s1} if @var{s1} is not a null pointer and
+@var{s1max} is not greater than @code{RSIZE_MAX}.
+
+@ssmdefd{ssm_memcpy_s,memcpy_s}
+Copy a memory area.
+@cartouche
+@example
+ssm_errno_t ssm_memcpy_s (void* @var{s1}, ssm_rsize_t @var{s1max},
+                          const void* @var{s2}, ssm_rsize_t @var{n});
+
+errno_t memcpy_s (void* @var{s1}, rsize_t @var{s1max}, const void* @var{s2}, rsize_t @var{n});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{s1} @tab out @tab Destination buffer. Cannot be @code{NULL}.
+@item @var{s1max} @tab in @tab Maximum size of the destination buffer.
+Cannot be greater than @code{RSIZE_MAX}.
+@item @var{s2} @tab in @tab Source buffer. Cannot be @code{NULL}.
+@item @var{n} @tab in @tab Number of bytes to copy.
+Cannot be greater than @var{s1max}.
+@item @tab return @tab A status value.
+@end multitable
+
+In C11K, the @code{memcpy_s} function has the same specification as the
+@code{memmove_s} function, except that the objects pointed to by @var{s1} or @var{s2}
+cannot overlap. In the SSM library, the @code{memcpy_s} function allows
+overlapping areas. So, in practice, the @code{memcpy_s} and @code{memmove_s}
+functions are identical.
+
+@ssmdefd{ssm_memset_s,memset_s}
+Initialize a memory area with a given value.
+@cartouche
+@example
+ssm_errno_t ssm_memset_s (void* @var{s}, ssm_rsize_t @var{smax}, int @var{c}, ssm_rsize_t @var{n});
+
+errno_t memset_s (void* @var{s}, rsize_t @var{smax}, int @var{c}, rsize_t @var{n});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{s} @tab out @tab Destination buffer. Cannot be @code{NULL}.
+@item @var{smax} @tab in @tab Maximum size of the destination buffer.
+Cannot be greater than @code{RSIZE_MAX}.
+@item @var{c} @tab in @tab The value to set in each byte of the destination buffer.
+@item @var{n} @tab in @tab Number of bytes to initialize.
+Cannot be greater than @var{smax}.
+@item @tab return @tab A status value.
+@end multitable
+
+The @code{memset_s} function copies the value of @var{c} (converted to an @code{unsigned char}) into
+each of the first @var{n} characters of the object pointed to by @var{s}. Unlike @code{memset}, any call to
+the @code{memset_s} function shall be evaluated strictly according to the rules of the abstract
+machine as described in C11 5.1.2.3. That is, any call to the @code{memset_s} function shall
+assume that the memory indicated by @var{s} and @var{n} may be accessible in the future and thus
+must contain the values indicated by @var{c}.
+
+If there is a runtime-constraint violation, then if @var{s} is not a null pointer and @var{smax} is not
+greater than @code{RSIZE_MAX}, the @code{memset_s} function stores the value of @var{c} (converted to an
+@code{unsigned char}) into each of the first @var{smax} characters of the object pointed to by @var{s}.
+
+@ssmdefd{ssm_strcpy_s,strcpy_s}
+Copy a null-terminated string.
+@cartouche
+@example
+ssm_errno_t ssm_strcpy_s (char* @var{s1}, ssm_rsize_t @var{s1max}, const char* @var{s2});
+
+errno_t strcpy_s (char* @var{s1}, rsize_t @var{s1max}, const char* @var{s2});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{s1} @tab out @tab Destination string buffer. Cannot be @code{NULL}.
+@item @var{s1max} @tab in @tab Maximum size of the destination string buffer.
+Cannot be greater than @code{RSIZE_MAX}.
+Shall be greater than @code{strnlen_s(@var{s2}, @var{s1max})}.
+@item @var{s2} @tab in @tab Source string. Cannot be @code{NULL}.
+@item @tab return @tab A status value.
+@end multitable
+
+The @code{strcpy_s} function copies the string pointed to by @var{s2} (including the terminating
+null character) into the array pointed to by @var{s1}.
+
+All elements following the terminating null character (if any) written by @code{strcpy_s} in
+the array of @var{s1max} characters pointed to by @var{s1} take unspecified values when
+@code{strcpy_s} returns.
+
+C11K specifies that copying shall not take place between objects that overlap.
+In the SSM library, the @code{strcpy_s} function allows overlapping areas.
+
+If there is a runtime-constraint violation, then if @var{s1} is not a null pointer and @var{s1max} is
+greater than zero and not greater than @code{RSIZE_MAX}, then @code{strcpy_s} sets @var{s1}@code{[0]} to the
+null character.
+
+@ssmdefd{ssm_strncpy_s,strncpy_s}
+Copy a null-terminated string with bounded size.
+@cartouche
+@example
+ssm_errno_t ssm_strncpy_s (char* @var{s1}, ssm_rsize_t @var{s1max},
+                           const char* @var{s2}, ssm_rsize_t @var{n});
+
+errno_t strncpy_s (char* @var{s1}, rsize_t @var{s1max}, const char* @var{s2}, rsize_t @var{n});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{s1} @tab out @tab Destination string buffer. Cannot be @code{NULL}.
+@item @var{s1max} @tab in @tab Maximum size of the destination string buffer.
+Cannot be greater than @code{RSIZE_MAX}.
+Shall be greater than @code{strnlen_s(@var{s2}, @var{s1max})}.
+@item @var{s2} @tab in @tab Source string. Cannot be @code{NULL}.
+@item @var{n} @tab in @tab Maximum number of characters to copy, not including
+the trailing null-character. If @var{n} is not less than @var{s1max}, then @var{s1max}
+shall be greater than @code{strnlen_s(@var{s2}, @var{s1max})}. 
+@item @tab return @tab A status value.
+@end multitable
+
+The @code{strncpy_s} function copies not more than @var{n} successive characters (characters that
+follow a null character are not copied) from the array pointed to by @var{s2} to the array
+pointed to by @var{s1}. If no null character was copied from @var{s2}, then @var{s1}@code{[n]} is set to a null
+character.
+
+All elements following the terminating null character (if any) written by @code{strncpy_s} in
+the array of @var{s1max} characters pointed to by @var{s1} take unspecified values when
+@code{strncpy_s} returns.
+
+The @code{strncpy_s} function can be used to copy a string without the danger that the result
+will not be null terminated or that characters will be written past the end of the destination array
+
+C11K specifies that copying shall not take place between objects that overlap.
+In the SSM library, the @code{strncpy_s} function allows overlapping areas.
+
+If there is a runtime-constraint violation, then if @var{s1} is not a null pointer and @var{s1max} is
+greater than zero and not greater than @code{RSIZE_MAX}, then @code{strncpy_s} sets @var{s1}@code{[0]} to the
+null character.
+
+@ssmdefd{ssm_strcat_s,strcat_s}
+Concatenate two null-terminated strings.
+@cartouche
+@example
+ssm_errno_t ssm_strcat_s (char* @var{s1}, ssm_rsize_t @var{s1max}, const char* @var{s2});
+
+errno_t strcat_s (char* @var{s1}, rsize_t @var{s1max}, const char* @var{s2});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{s1} @tab out @tab Destination string buffer. Cannot be @code{NULL}.
+@item @var{s1max} @tab in @tab Maximum size of the destination string buffer.
+Cannot be greater than @code{RSIZE_MAX}. Cannot be zero.
+@item @var{s2} @tab in @tab Source string. Cannot be @code{NULL}.
+@item @tab return @tab A status value.
+@end multitable
+
+The @code{strcat_s} function appends a copy of the string pointed to by @var{s2} (including the
+terminating null character) to the end of the string pointed to by @var{s1}. The initial character
+from @var{s2} overwrites the null character at the end of @var{s1}.
+
+All elements following the terminating null character (if any) written by @code{strcat_s} in
+the array of @var{s1max} characters pointed to by @var{s1} take unspecified values when
+@code{strcat_s} returns.
+
+Let @var{m} denote the value @code{@var{s1max} - strnlen_s(@var{s1}, @var{s1max})} upon entry to @code{strcat_s}.
+@var{m} shall not equal zero. @var{m} shall be greater than @code{strnlen_s(@var{s2}, @var{m})}.
+
+C11K specifies that copying shall not take place between objects that overlap.
+In the SSM library, the @code{strcat_s} function allows overlapping areas.
+
+If there is a runtime-constraint violation, then if @var{s1} is not a null pointer and @var{s1max} is
+greater than zero and not greater than @code{RSIZE_MAX}, then @code{strcat_s} sets @var{s1}@code{[0]} to the
+null character.
+
+@ssmdefd{ssm_strncat_s,strncat_s}
+Concatenate two null-terminated strings with bounded size.
+@cartouche
+@example
+ssm_errno_t ssm_strncat_s (char* @var{s1}, ssm_rsize_t @var{s1max},
+                           const char* @var{s2}, ssm_rsize_t @var{n});
+
+errno_t strncat_s (char* @var{s1} rsize_t @var{s1max}, const char* @var{s2}, rsize_t @var{n});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{s1} @tab out @tab Destination string buffer. Cannot be @code{NULL}.
+@item @var{s1max} @tab in @tab Maximum size of the destination string buffer.
+Cannot be greater than @code{RSIZE_MAX}. Cannot be zero.
+@item @var{s2} @tab in @tab Source string. Cannot be @code{NULL}.
+@item @var{n} @tab in @tab Maximum number of characters to copy, not including
+the trailing null-character. Cannot be greater than @code{RSIZE_MAX}.
+@item @tab return @tab A status value.
+@end multitable
+
+Let @var{m} denote the value @code{@var{s1max} - strnlen_s(@var{s1}, @var{s1max})}
+upon entry to @code{strcat_s}. @var{m} shall not equal zero. If @var{n} is not less
+than @var{m}, then @var{m} shall be greater than @code{strnlen_s(@var{s2}, @var{m})}.
+
+The @code{strncat_s} function appends not more than @var{n} successive characters (characters
+that follow a null character are not copied) from the array pointed to by @var{s2} to the end of
+the string pointed to by @var{s1}. The initial character from @var{s2} overwrites the null character at
+the end of @var{s1}. If no null character was copied from @var{s2}, then @code{@var{s1}[@var{s1max}-@var{m}+n]}
+is set to a null character.
+
+All elements following the terminating null character (if any) written by @code{strncat_s} in
+the array of @var{s1max} characters pointed to by @var{s1} take unspecified values when
+@code{strncat_s} returns.
+
+C11K specifies that copying shall not take place between objects that overlap.
+In the SSM library, the @code{strcat_s} function allows overlapping areas.
+
+If there is a runtime-constraint violation, then if @var{s1} is not a null pointer and @var{s1max} is
+greater than zero and not greater than @code{RSIZE_MAX}, then @code{strncat_s} sets @var{s1}@code{[0]} to the
+null character.
+
+@ssmdefd{ssm_strnlen_s,strnlen_s}
+Get the length of a null-terminated string with bounded size.
+@cartouche
+@example
+size_t ssm_strnlen_s (const char* @var{s}, size_t @var{maxsize});
+
+size_t strnlen_s (const char* @var{s}, size_t @var{maxsize});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{s} @tab in @tab String to get the length of.
+@item @var{maxsize} @tab in @tab Maximum number of characters to check.
+@item @tab return @tab Length of the string or zero if @var{s1} is @code{NULL}.
+@end multitable
+
+The @code{strnlen_s} function computes the length of the string pointed to by @var{s}.
+
+The @code{strnlen_s} function returns the number of characters that precede the
+terminating null character. If there is no null character in the first @var{maxsize} characters of
+@var{s} then @code{strnlen_s} returns @var{maxsize}. At most the first @var{maxsize} characters of
+@var{s} shall be accessed by @code{strnlen_s}.
+
+@ssmdefd{ssm_strerror_s,strerror_s}
+Map an error code to a string value.
+@cartouche
+@example
+ssm_errno_t ssm_strerror_s (char* @var{s}, ssm_rsize_t @var{maxsize}, ssm_errno_t @var{errnum});
+
+errno_t strerror_s (char* @var{s}, rsize_t @var{maxsize}, errno_t @var{errnum});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{s} @tab out @tab The string buffer to receive the message string.
+Cannot be @code{NULL}.
+@item @var{maxsize} @tab in @tab Maximum size of the string buffer.
+Cannot be zero, cannot be greater than @code{RSIZE_MAX}.
+@item @var{errnum} @tab in @tab The error code to get a description of.
+@item @tab return @tab A status value.
+@end multitable
+
+The @code{strerror_s} function maps the number in @var{errnum} to a locale-specific message
+string. Typically, the values for @var{errnum} come from @code{errno}, but @code{strerror_s}
+shall map any value of type @code{int} to a message.
+
+@b{Restriction:} The SSM library implementation of @code{strerror_s} does not
+return locale-specific messages. All returned messages are in English.
+Furthermore, only the @code{errno_t} values returned by the C11K functions of the
+SSM library are recognized. General system error code from @code{errno} are not
+valid values for @var{errnum}. Any @var{errnum} which does not correspond to a known
+@code{ssm_status_t} value will return the same @code{"Unknown"} string.
+
+If the length of the desired string is less than @var{maxsize}, then the string is copied to the
+array pointed to by @var{s}.
+
+Otherwise, if @var{maxsize} is greater than zero, then @var{maxsize}@code{-1}
+characters are copied from the string to the array pointed to by @var{s} and then
+@var{s}@code{[}@var{maxsize}@code{-1]} is set to the null character. Then, if
+@var{maxsize} is greater than 3, then @var{s}@code{[}@var{maxsize}@code{-2]},
+@var{s}@code{[}@var{maxsize}@code{-3]} and @var{s}@code{[}@var{maxsize}@code{-4]}
+are set to the character period (@code{.}).
+
+If there is a runtime-constraint violation, then the array (if any) pointed to by @var{s} is not
+modified.
+
+@ssmdefd{ssm_strerrorlen_s,strerrorlen_s}
+Get the length of the string that maps an error code.
+@cartouche
+@example
+size_t ssm_strerrorlen_s (ssm_errno_t @var{errnum});
+
+size_t strerrorlen_s (errno_t @var{errnum});
+@end example
+@end cartouche
+
+@multitable @columnfractions .15 .10 .75
+@headitem Parameter @tab Mode @tab Description
+@item @var{errnum} @tab in @tab The error code to get a description of.
+@item @tab return @tab Number of characters (not including the null character) in the full message string.
+@end multitable
+
+The @code{strerrorlen_s} function calculates the length of the (untruncated) locale-specific
+message string that the @code{strerror_s} function maps to @var{errnum}.
+
+@b{Restriction:} The SSM library implementation of @code{strerrorlen_s} has the same
+restrictions as @code{strerror_s}.
