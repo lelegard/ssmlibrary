@@ -1,3 +1,4 @@
+
 /*-----------------------------------------------------------------------------
  *
  *  Copyright (c) 2014, Thierry Lelegard
@@ -362,6 +363,14 @@ static void test_insert (void)
     CU_ASSERT (memcmp(ssm_dbuffer_data(&b), "abcdefgh", 8) == 0);
 
     CU_ASSERT (ssm_dbuffer_insert(&b, 2, 3) == SSM_OK);
+    CU_ASSERT (ssm_dbuffer_length(&b) == 11);
+    CU_ASSERT (memcmp(ssm_dbuffer_data(&b), "abcdecdefgh", 11) == 0);
+
+    CU_ASSERT (ssm_dbuffer_insert(&b, 10, 0) == SSM_OK);
+    CU_ASSERT (ssm_dbuffer_length(&b) == 11);
+    CU_ASSERT (memcmp(ssm_dbuffer_data(&b), "abcdecdefgh", 11) == 0);
+
+    CU_ASSERT (ssm_dbuffer_insert(&b, 10, SSM_SIZE_MAX + 1) == SSM_SIZETOOLARGE);
     CU_ASSERT (ssm_dbuffer_length(&b) == 11);
     CU_ASSERT (memcmp(ssm_dbuffer_data(&b), "abcdecdefgh", 11) == 0);
 

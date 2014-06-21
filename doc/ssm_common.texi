@@ -111,6 +111,10 @@ for individual status values or use one of the status checking macros.
 @findex SSM_INDEXRANGE
 @tab An index parameter in out of range.
 @tab Non-fatal
+@item @t{SSM_SIZEZERO}
+@findex SSM_SIZEZERO
+@tab Some size is zero.
+@tab Non-fatal
 @item @t{SSM_NOMEMORY}
 @findex SSM_NOMEMORY
 @tab Memory allocation failure, result is unchanged.

@@ -40,6 +40,7 @@ static void test_success(void)
     CU_ASSERT (!ssm_success(SSM_NULLOUT));
     CU_ASSERT (!ssm_success(SSM_SIZETOOLARGE));
     CU_ASSERT (!ssm_success(SSM_INDEXRANGE));
+    CU_ASSERT (!ssm_success(SSM_SIZEZERO));
     CU_ASSERT (!ssm_success(SSM_NOMEMORY));
     CU_ASSERT (!ssm_success(SSM_CORRUPTED));
     CU_ASSERT (!ssm_success(SSM_BUG));
@@ -52,6 +53,7 @@ static void test_error(void)
     CU_ASSERT (ssm_error(SSM_NULLOUT));
     CU_ASSERT (ssm_error(SSM_SIZETOOLARGE));
     CU_ASSERT (ssm_error(SSM_INDEXRANGE));
+    CU_ASSERT (ssm_error(SSM_SIZEZERO));
     CU_ASSERT (ssm_error(SSM_NOMEMORY));
     CU_ASSERT (ssm_error(SSM_CORRUPTED));
     CU_ASSERT (ssm_error(SSM_BUG));
@@ -64,6 +66,7 @@ static void test_fatal(void)
     CU_ASSERT (!ssm_fatal(SSM_NULLOUT));
     CU_ASSERT (!ssm_fatal(SSM_SIZETOOLARGE));
     CU_ASSERT (!ssm_fatal(SSM_INDEXRANGE));
+    CU_ASSERT (!ssm_fatal(SSM_SIZEZERO));
     CU_ASSERT (ssm_fatal(SSM_NOMEMORY));
     CU_ASSERT (ssm_fatal(SSM_CORRUPTED));
     CU_ASSERT (ssm_fatal(SSM_BUG));
@@ -85,6 +88,7 @@ static void test_strings(void)
         case SSM_NULLOUT:      CU_ASSERT_STRING_EQUAL (msg, "A NULL pointer was provided as output parameter"); break;
         case SSM_SIZETOOLARGE: CU_ASSERT_STRING_EQUAL (msg, "Some size is larger than SSM_SIZE_MAX"); break;
         case SSM_INDEXRANGE:   CU_ASSERT_STRING_EQUAL (msg, "An index parameter in out of range"); break;
+        case SSM_SIZEZERO:     CU_ASSERT_STRING_EQUAL (msg, "Some size is zero"); break;
         case SSM_NOMEMORY:     CU_ASSERT_STRING_EQUAL (msg, "Memory allocation failure, result is unchanged"); break;
         case SSM_CORRUPTED:    CU_ASSERT_STRING_EQUAL (msg, "Memory was previously corrupted, result is undefined but safe"); break;
         case SSM_BUG:          CU_ASSERT_STRING_EQUAL (msg, "Internal inconsistency, there is a bug in the SSM library"); break;

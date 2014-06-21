@@ -406,6 +406,14 @@ static void test_insert (void)
     CU_ASSERT (ssm_sbuffer_length(&b.buf) == 11);
     CU_ASSERT (memcmp(ssm_sbuffer_data(&b.buf), "abcdecdefgh", 11) == 0);
 
+    CU_ASSERT (ssm_sbuffer_insert(&b.buf, 10, SSM_SIZE_MAX + 1) == SSM_SIZETOOLARGE);
+    CU_ASSERT (ssm_sbuffer_length(&b.buf) == 11);
+    CU_ASSERT (memcmp(ssm_sbuffer_data(&b.buf), "abcdecdefgh", 11) == 0);
+
+    CU_ASSERT (ssm_sbuffer_insert(&b.buf, 10, 0) == SSM_OK);
+    CU_ASSERT (ssm_sbuffer_length(&b.buf) == 11);
+    CU_ASSERT (memcmp(ssm_sbuffer_data(&b.buf), "abcdecdefgh", 11) == 0);
+
     CU_ASSERT (ssm_sbuffer_insert(&b.buf, 11, 3) == SSM_OK);
     CU_ASSERT (ssm_sbuffer_length(&b.buf) == 14);
     CU_ASSERT (memcmp(ssm_sbuffer_data(&b.buf), "abcdecdefgh", 11) == 0);
@@ -413,6 +421,14 @@ static void test_insert (void)
     CU_ASSERT (ssm_sbuffer_insert(&b.buf, 0, 8) == SSM_TRUNCATED);
     CU_ASSERT (ssm_sbuffer_length(&b.buf) == 16);
     CU_ASSERT (memcmp(ssm_sbuffer_data(&b.buf), "abcdecdeabcdecde", 16) == 0);
+
+    CU_ASSERT (ssm_sbuffer_import(&b.buf, "abcdefghijkl", 12) == SSM_OK);
+    CU_ASSERT (ssm_sbuffer_length(&b.buf) == 12);
+    CU_ASSERT (memcmp(ssm_sbuffer_data(&b.buf), "abcdefghijkl", 12) == 0);
+
+    CU_ASSERT (ssm_sbuffer_insert(&b.buf, 10, 8) == SSM_TRUNCATED);
+    CU_ASSERT (ssm_sbuffer_length(&b.buf) == 16);
+    CU_ASSERT (memcmp(ssm_sbuffer_data(&b.buf), "abcdefghijkl", 12) == 0);
 }
 
 static void test_struct (void)

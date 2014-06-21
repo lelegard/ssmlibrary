@@ -162,6 +162,7 @@ typedef enum {
     SSM_NULLOUT      = 0x40,  /* A NULL pointer was provided as output parameter */
     SSM_SIZETOOLARGE = 0x41,  /* Some size is larger than SSM_SIZE_MAX. */
     SSM_INDEXRANGE   = 0x42,  /* An index parameter in out of range. */
+    SSM_SIZEZERO     = 0x43,  /* Some size is zero. */
     SSM_NOMEMORY     = 0xC0,  /* Memory allocation failure, result is unchanged. */
     SSM_CORRUPTED    = 0xC1,  /* Memory was previously corrupted, result is undefined but safe. */
     SSM_BUG          = 0xC2   /* Internal inconsistency, there is a bug in the SSM library. */
