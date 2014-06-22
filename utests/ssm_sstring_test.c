@@ -552,6 +552,10 @@ static void test_status_string (void)
             CU_ASSERT (ret == SSM_OK);
             CU_ASSERT_STRING_EQUAL (msg, "Some size is zero");
             break;
+        case SSM_NULLIN:
+            CU_ASSERT (ret == SSM_TRUNCATED);
+            CU_ASSERT_STRING_EQUAL (msg, "A NULL pointer was provided as input par");
+            break;
         case SSM_NOMEMORY:
             CU_ASSERT (ret == SSM_TRUNCATED);
             CU_ASSERT_STRING_EQUAL (msg, "Memory allocation failure, result is unc");

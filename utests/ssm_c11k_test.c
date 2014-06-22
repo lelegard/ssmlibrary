@@ -155,6 +155,10 @@ static void test_strerror_s (void)
             CU_ASSERT (ret == SSM_OK);
             CU_ASSERT_STRING_EQUAL (msg, "Some size is zero");
             break;
+        case SSM_NULLIN:
+            CU_ASSERT (ret == SSM_TRUNCATED);
+            CU_ASSERT_STRING_EQUAL (msg, "A NULL pointer was provided as input ...");
+            break;
         case SSM_NOMEMORY:
             CU_ASSERT (ret == SSM_TRUNCATED);
             CU_ASSERT_STRING_EQUAL (msg, "Memory allocation failure, result is ...");
@@ -190,6 +194,7 @@ static void test_strerrorlen_s (void)
         case SSM_SIZETOOLARGE: CU_ASSERT (len == 37); break;
         case SSM_INDEXRANGE:   CU_ASSERT (len == 34); break;
         case SSM_SIZEZERO:     CU_ASSERT (len == 17); break;
+        case SSM_NULLIN:       CU_ASSERT (len == 46); break;
         case SSM_NOMEMORY:     CU_ASSERT (len == 46); break;
         case SSM_CORRUPTED:    CU_ASSERT (len == 61); break;
         case SSM_BUG:          CU_ASSERT (len == 57); break;

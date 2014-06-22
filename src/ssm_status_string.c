@@ -36,6 +36,7 @@ const char* ssm_status_string(ssm_status_t status)
     case SSM_SIZETOOLARGE: return "Some size is larger than SSM_SIZE_MAX";
     case SSM_INDEXRANGE:   return "An index parameter in out of range";
     case SSM_SIZEZERO:     return "Some size is zero";
+    case SSM_NULLIN:       return "A NULL pointer was provided as input parameter";
     case SSM_NOMEMORY:     return "Memory allocation failure, result is unchanged";
     case SSM_CORRUPTED:    return "Memory was previously corrupted, result is undefined but safe";
     case SSM_BUG:          return "Internal inconsistency, there is a bug in the SSM library";

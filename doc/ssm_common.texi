@@ -109,11 +109,15 @@ for individual status values or use one of the status checking macros.
 @tab Non-fatal
 @item @t{SSM_INDEXRANGE}
 @findex SSM_INDEXRANGE
-@tab An index parameter in out of range.
+@tab An index or size parameter is out of range.
 @tab Non-fatal
 @item @t{SSM_SIZEZERO}
 @findex SSM_SIZEZERO
 @tab Some size is zero.
+@tab Non-fatal
+@item @t{SSM_NULLIN}
+@findex SSM_NULLIN
+@tab A NULL pointer was provided as input parameter.
 @tab Non-fatal
 @item @t{SSM_NOMEMORY}
 @findex SSM_NOMEMORY
@@ -128,6 +132,10 @@ for individual status values or use one of the status checking macros.
 @tab Internal inconsistency, there is a bug in the SSM library.
 @tab Fatal
 @end multitable
+
+The status values @code{SSM_SIZEZERO} and @code{SSM_NULLIN} are usually returned
+by the C11K functions only. The SSM functions always accept an empty destination
+buffer or a null pointer as input (equivalent to an empty string or buffer).
 
 The following functions (they are actually macros) check the severity of
 a @code{ssm_status_t} value.
