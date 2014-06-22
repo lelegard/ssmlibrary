@@ -26,5 +26,20 @@
 
 ssm_errno_t ssm_memset_s (void* s, ssm_rsize_t smax, int c, ssm_rsize_t n)
 {
-    return SSM_BUG; //@@ to be completed
+    if (smax > SSM_RSIZE_MAX) {
+        return SSM_SIZETOOLARGE;
+    }
+    else {
+        const int truncate = n > smax;
+        const ssm_status_t status = ssm_set(s, truncate ? smax : n, (uint8_t)c);
+        if (!truncate || !ssm_success(status)) {
+            return status;
+        }
+        else if (n > SSM_RSIZE_MAX) {
+            return SSM_SIZETOOLARGE;
+        }
+        else {
+            return SSM_TRUNCATED;
+        }
+    }
 }

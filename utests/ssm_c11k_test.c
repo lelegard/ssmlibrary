@@ -88,7 +88,31 @@ static void test_memcpy_s (void)
 
 static void test_memset_s (void)
 {
-    //@@
+    char buf[8];
+
+    CU_ASSERT (memset_s(buf, sizeof(buf), 'a', 8) == SSM_OK);
+    CU_ASSERT (memcmp(buf, "aaaaaaaa", 8) == 0);
+
+    CU_ASSERT (memset_s(NULL, sizeof(buf), 'b', 1) == SSM_NULLOUT);
+    CU_ASSERT (memcmp(buf, "aaaaaaaa", 8) == 0);
+
+    CU_ASSERT (memset_s(buf, sizeof(buf), 'c', RSIZE_MAX + 1) == SSM_SIZETOOLARGE);
+    CU_ASSERT (memcmp(buf, "cccccccc", 8) == 0);
+
+    CU_ASSERT (memset_s(buf, RSIZE_MAX + 1, 'd', 1) == SSM_SIZETOOLARGE);
+    CU_ASSERT (memcmp(buf, "cccccccc", 8) == 0);
+
+    CU_ASSERT (memset_s(buf, sizeof(buf), 'e', 9) == SSM_TRUNCATED);
+    CU_ASSERT (memcmp(buf, "eeeeeeee", 8) == 0);
+
+    CU_ASSERT (memset_s(buf, sizeof(buf), 'f', 0) == SSM_OK);
+    CU_ASSERT (memcmp(buf, "eeeeeeee", 8) == 0);
+
+    CU_ASSERT (memset_s(buf, sizeof(buf), 'g', 3) == SSM_OK);
+    CU_ASSERT (memcmp(buf, "gggeeeee", 8) == 0);
+
+    CU_ASSERT (memset_s(buf, 0, 'h', 0) == SSM_OK);
+    CU_ASSERT (memcmp(buf, "gggeeeee", 8) == 0);
 }
 
 static void test_strcpy_s (void)
