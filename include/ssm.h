@@ -504,7 +504,7 @@ _SSMAPI ssm_errno_t ssm_strncat_s(char* s1, ssm_rsize_t s1max, const char* s2, s
 _SSMAPI ssm_errno_t ssm_memset_s(void* s, ssm_rsize_t smax, int c, ssm_rsize_t n);
 _SSMAPI ssm_errno_t ssm_strerror_s(char* s, ssm_rsize_t maxsize, ssm_errno_t errnum);
 _SSMAPI size_t ssm_strerrorlen_s(ssm_errno_t errnum);
-_SSMAPI size_t ssm_strnlen_s(const char* s, size_t maxsize);
+#define ssm_strnlen_s(s,maxsize) ssm_cstring_length(s,maxsize)
 
 #if defined(SSM_C11K) && defined(RSIZE_MAX)
 #error "C11 Annex K functions are already provided by another implementation"
@@ -521,7 +521,7 @@ typedef ssm_rsize_t rsize_t;                                          /* C11 K.3
 #define memset_s(s,smax,c,n)         ssm_memset_s(s,smax,c,n)         /* C11 K.3.7.4.1 */
 #define strerror_s(s,maxsize,errnum) ssm_strerror_s(s,maxsize,errnum) /* C11 K.3.7.4.2 */
 #define strerrorlen_s(errnum)        ssm_strerrorlen_s(errnum)        /* C11 K.3.7.4.3 */
-#define strlen_s(s,maxsize)          ssm_strlen_s(s,maxsize)          /* C11 K.3.7.4.4 */
+#define strnlen_s(s,maxsize)         ssm_strnlen_s(s,maxsize)         /* C11 K.3.7.4.4 */
 #endif
 
 #if defined(__cplusplus)

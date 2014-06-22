@@ -137,7 +137,18 @@ static void test_strncat_s (void)
 
 static void test_strnlen_s (void)
 {
-    //@@
+    CU_ASSERT (strnlen_s("", 5) == 0);
+    CU_ASSERT (strnlen_s("a", 5) == 1);
+    CU_ASSERT (strnlen_s("aa", 5) == 2);
+    CU_ASSERT (strnlen_s("aaa", 5) == 3);
+    CU_ASSERT (strnlen_s("aaaa", 5) == 4);
+    CU_ASSERT (strnlen_s("aaaaa", 5) == 5);
+    CU_ASSERT (strnlen_s("aaaaaa", 5) == 5);
+    CU_ASSERT (strnlen_s("aaaaaaa", 5) == 5);
+
+    CU_ASSERT (strnlen_s(NULL, 5) == 0);
+    CU_ASSERT (strnlen_s("aa", RSIZE_MAX + 1) == 0);
+    CU_ASSERT (strnlen_s(NULL, RSIZE_MAX + 1) == 0);
 }
 
 static void test_strerror_s (void)

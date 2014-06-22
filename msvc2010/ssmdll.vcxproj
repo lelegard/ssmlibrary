@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -75,7 +75,6 @@
     <ClCompile Include="..\src\ssm_strerror_s.c" />
     <ClCompile Include="..\src\ssm_strncat_s.c" />
     <ClCompile Include="..\src\ssm_strncpy_s.c" />
-    <ClCompile Include="..\src\ssm_strnlen_s.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1AD31049-26B0-4922-89CF-778040DFC51E}</ProjectGuid>
