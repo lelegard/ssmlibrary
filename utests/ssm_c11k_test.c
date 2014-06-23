@@ -117,12 +117,93 @@ static void test_memset_s (void)
 
 static void test_strcpy_s (void)
 {
-    //@@
+    char buf[8];
+
+    CU_ASSERT (strcpy_s (NULL, sizeof(buf), "abcdef") == SSM_NULLOUT);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strcpy_s (buf, sizeof(buf), NULL) == SSM_NULLIN);
+    CU_ASSERT (strcmp(buf, "") == 0);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strcpy_s (buf, RSIZE_MAX + 1, "abcdef") == SSM_SIZETOOLARGE);
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+
+    CU_ASSERT (strcpy_s (buf, sizeof(buf), "abcdefghijkl") == SSM_INDEXRANGE);
+    CU_ASSERT (strcmp(buf, "") == 0);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strcpy_s (buf, sizeof(buf), "abcdef") == SSM_OK);
+    CU_ASSERT (strcmp(buf, "abcdef") == 0);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strcpy_s (buf, 0, "abcdef") == SSM_INDEXRANGE);
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+
+    CU_ASSERT (strcpy_s (buf, sizeof(buf), "") == SSM_OK);
+    CU_ASSERT (strcmp(buf, "") == 0);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strcpy_s (buf, sizeof(buf), "abcdefgh") == SSM_INDEXRANGE);
+    CU_ASSERT (strcmp(buf, "") == 0);
 }
 
 static void test_strncpy_s (void)
 {
-    //@@
+    char buf[8];
+
+    CU_ASSERT (strncpy_s (NULL, sizeof(buf), "abcdef", 6) == SSM_NULLOUT);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strncpy_s (buf, sizeof(buf), NULL, 1) == SSM_NULLIN);
+    CU_ASSERT (strcmp(buf, "") == 0);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strncpy_s (buf, RSIZE_MAX + 1, "abcdef", 6) == SSM_SIZETOOLARGE);
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+
+    CU_ASSERT (strncpy_s (buf, sizeof(buf), "abcdefghijkl", 40) == SSM_INDEXRANGE);
+    CU_ASSERT (strcmp(buf, "") == 0);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strncpy_s (buf, sizeof(buf), "abcdef", 6) == SSM_OK);
+    CU_ASSERT (strcmp(buf, "abcdef") == 0);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strncpy_s (buf, sizeof(buf), "abcdef", RSIZE_MAX) == SSM_OK);
+    CU_ASSERT (strcmp(buf, "abcdef") == 0);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strncpy_s (buf, sizeof(buf), "abcdef", 4) == SSM_OK);
+    CU_ASSERT (strcmp(buf, "abcd") == 0);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strncpy_s (buf, sizeof(buf), "abcdef", 0) == SSM_OK);
+    CU_ASSERT (strcmp(buf, "") == 0);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strncpy_s (buf, 0, "abcdef", 6) == SSM_INDEXRANGE);
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+
+    CU_ASSERT (strncpy_s (buf, sizeof(buf), "", 4) == SSM_OK);
+    CU_ASSERT (strcmp(buf, "") == 0);
+
+    memset(buf, 'x', sizeof(buf));
+    CU_ASSERT (memcmp(buf, "xxxxxxxx", 8) == 0);
+    CU_ASSERT (strncpy_s (buf, sizeof(buf), "abcdefgh", 8) == SSM_INDEXRANGE);
+    CU_ASSERT (strcmp(buf, "") == 0);
 }
 
 static void test_strcat_s (void)

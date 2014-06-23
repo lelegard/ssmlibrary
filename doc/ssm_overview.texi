@@ -23,7 +23,6 @@ Project page: @url{http://sourceforge.net/projects/ssmlibrary/}
 * Dynamic memory allocation::
 * Using "canary" runtime checks::
 * Supported platforms::
-* Code footprint::
 @end menu
 
 @node The classical C strings library
@@ -356,81 +355,18 @@ the handling of memory corruptions when they are detected.
 @node Supported platforms
 @section Supported platforms
 
-The SSM library has been tested on the following platforms:
+The SSM library has been tested on the following platforms in user-mode
+applications. When a Linux kernel version is specified, the SSM library has also
+been tested in Loadable Kernel Modules (LKM) on the platform.
 
-@itemize
-@item
-User-mode applications:
-
-@itemize @minus
-@item
-Red Hat Enterprise Linux 6.1 / x86-64 / gcc 4.4.5
-@item
-Linaro Linux 12.05 / ARM v7 (Snowball) / gcc 4.6.3
-@item
-Microsoft Windows 7 / x86 / Microsoft Visual C++ 2010 Express
-@item
-Microsoft Windows 7 / x86 / Cygwin / gcc 4.8.2
-@end itemize
-
-@item
-Kernel modules:
-
-@itemize @minus
-@item
-Red Hat Enterprise Linux 6.1 / x86-64 / gcc 4.4.5 / kernel 2.6.32
-@end itemize
-@end itemize
-
-@node Code footprint
-@section Code footprint
-
-In embedded systems, there is a usual requirement for a small code footprint.
-The following table summarizes the code footprint in bytes of various usages
-of the SSM library on some standard platforms.
-
-@multitable {Production only (non-canary)} {ARM v7} {Intel 32} {Intel 64}
-@headitem Feature                  @tab ARM v7 @tab Intel 32 @tab Intel 64
-@item Total code size              @tab   3337 @tab     9300 @tab     7681
-@item Production only (non-canary) @tab   1508 @tab     4260 @tab     3575
-@item Static strings only          @tab    722 @tab     1968 @tab     1666
-@item Dynamic strings only         @tab   1002 @tab     2876 @tab     2364
-@item Static buffers only          @tab    634 @tab     1656 @tab     1406
-@item Dynamic buffers only         @tab    914 @tab     2564 @tab     2104
+@multitable @columnfractions .32 .18 .30 .20
+@headitem Operating System             @tab Architecture @tab Compiler  @tab Linux Kernel
+@item     Ubuntu 12.04 LTS             @tab Intel x86-64 @tab gcc 4.6.3 @tab 3.2.0
+@item     Ubuntu 14.04 LTS             @tab Intel x86-64 @tab gcc 4.8.2 @tab 3.13.0
+@item     Fedora 20                    @tab Intel x86-64 @tab gcc 4.8.2 @tab 3.14.8
+@item     Red Hat Enterprise Linux 6.1 @tab Intel x86-64 @tab gcc 4.4.5 @tab 2.6.32
+@item     Linaro 12.05                 @tab ARM v7       @tab gcc 4.6.3 @tab
+@item     Microsoft Windows 7          @tab Intel x86    @tab Visual C++ 2010 Express
+@item     Microsoft Windows 7          @tab Intel x86    @tab gcc 4.8.2 (Cygwin)
+@item     Microsoft Windows 7          @tab Intel x86-64 @tab gcc 4.8.2 (Cygwin)
 @end multitable
-@*
-
-Please note the following points:
-
-@itemize
-@item
-Each value represents the total size of the code, data and BSS segments in bytes.
-@item
-The code was compiled with size optimization in mind.
-@item
-All results are produced by GCC. MSVC code size was not checked.
-@item
-Slightly different values may be found with different versions of GCC.
-@item
-The reported values depend on the version of the library and need to be
-updated with the code. Make sure the documentation was correctly updated.
-@item
-The code is compiled as position-independent (@option{-fPIC}) by default to allow
-the creation of shared libraries. It has been observed that the code footprint
-is slightly smaller without this option.
-@item
-The total library code size includes the versions with and without "canary checks",
-which is not used in practice. The first line is consequently not meaningful in
-production environments. All subsequent results include only the "production" code
-(without "canary" checks).
-@item
-The sections about static or dynamic strings or memory buffers list the total
-code size for a given feature. But note that:
-@itemize @minus
-@item
-An application embeds only the code it requires, not all modules.
-@item
-Some features use common code. Using two features usually requires less than
-the sum of the code for the two features.
-@end itemize
-@end itemize
