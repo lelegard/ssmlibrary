@@ -43,7 +43,7 @@ EXTRA_DISTCLEAN += $(LKMDIR)
 # Build the temporary directory used for kernel module source and build the module.
 kernelmodule:
 	mkdir -p $(LKMDIR)
-	cd $(LKMDIR); ln -sf ../Makefile.kernelmodule Makefile
-	cd $(LKMDIR); ln -sf ../kernelmodule.c ../../include/ssm.h ../../src/ssm_*.[ch] .
-	rm $(LKMDIR)/*_canary*
+	cd $(LKMDIR); cp -f ../Makefile.kernelmodule Makefile
+	cd $(LKMDIR); cp -f ../kernelmodule.c ../../include/ssm.h ../../src/ssm_*.[ch] .
+	rm $(LKMDIR)/*_canary* $(LKMDIR)/*_s.c
 	$(MAKE) -C $(LKMDIR)
