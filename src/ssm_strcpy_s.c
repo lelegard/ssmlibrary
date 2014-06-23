@@ -33,6 +33,9 @@ ssm_errno_t ssm_strcpy_s (char* s1, ssm_rsize_t s1max, const char* s2)
         /* Normally allowed by ssm_copy (meaning empty buffer) */
         status = SSM_NULLIN;
     }
+    else if (s1max < 1) {
+        status = SSM_SIZEZERO;
+    }
     else if ((len = ssm_cstring_length(s2, s1max)) >= s1max) {
         /* String at s2 is longer that destination buffer, C11K does not allow truncation */
         status = SSM_INDEXRANGE;

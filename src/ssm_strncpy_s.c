@@ -33,6 +33,9 @@ ssm_errno_t ssm_strncpy_s (char* s1, ssm_rsize_t s1max, const char* s2, ssm_rsiz
         /* Normally allowed by ssm_copy (meaning empty buffer) */
         status = SSM_NULLIN;
     }
+    else if (s1max < 1) {
+        status = SSM_SIZEZERO;
+    }
     else if (n > SSM_RSIZE_MAX) {
         /* Not specifically caught by ssm_cstring_length */
         status = SSM_SIZETOOLARGE;

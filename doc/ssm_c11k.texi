@@ -327,7 +327,7 @@ errno_t strcat_s (char* @var{s1}, rsize_t @var{s1max}, const char* @var{s2});
 
 @multitable @columnfractions .15 .10 .75
 @headitem Parameter @tab Mode @tab Description
-@item @var{s1} @tab out @tab Destination string buffer. Cannot be @code{NULL}.
+@item @var{s1} @tab in,out @tab Destination string buffer. Cannot be @code{NULL}.
 @item @var{s1max} @tab in @tab Maximum size of the destination string buffer.
 Cannot be greater than @code{RSIZE_MAX}. Cannot be zero.
 @item @var{s2} @tab in @tab Source string. Cannot be @code{NULL}.
@@ -365,7 +365,7 @@ errno_t strncat_s (char* @var{s1} rsize_t @var{s1max}, const char* @var{s2}, rsi
 
 @multitable @columnfractions .15 .10 .75
 @headitem Parameter @tab Mode @tab Description
-@item @var{s1} @tab out @tab Destination string buffer. Cannot be @code{NULL}.
+@item @var{s1} @tab in,out @tab Destination string buffer. Cannot be @code{NULL}.
 @item @var{s1max} @tab in @tab Maximum size of the destination string buffer.
 Cannot be greater than @code{RSIZE_MAX}. Cannot be zero.
 @item @var{s2} @tab in @tab Source string. Cannot be @code{NULL}.
