@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\ssm.h" />
+    <ClInclude Include="..\src\ssm_internal.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\ssm_alloc_size.c" />
+    <ClCompile Include="..\src\ssm_canary_corruption.c" />
+    <ClCompile Include="..\src\ssm_compare.c" />
+    <ClCompile Include="..\src\ssm_copy.c" />
+    <ClCompile Include="..\src\ssm_cstring_length.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_alloc.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_alloc_canary.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_check.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_check_canary.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_compare.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_compare_canary.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_concat.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_concat_canary.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_copy.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_copy_canary.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_data_canary.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_free.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_free_canary.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_import.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_import_canary.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_insert.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_insert_canary.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_length_canary.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_resize.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_resize_canary.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_set_range.c" />
+    <ClCompile Include="..\src\ssm_dbuffer_set_range_canary.c" />
+    <ClCompile Include="..\src\ssm_dstring_import_size.c" />
+    <ClCompile Include="..\src\ssm_dstring_import_size_canary.c" />
+    <ClCompile Include="..\src\ssm_memmove_s.c" />
+    <ClCompile Include="..\src\ssm_memory_management.c" />
+    <ClCompile Include="..\src\ssm_memset_s.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_check.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_check_canary.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_compare.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_compare_canary.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_concat.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_concat_canary.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_copy.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_copy_canary.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_data_canary.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_import.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_import_canary.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_insert.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_insert_canary.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_length_canary.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_max_length_canary.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_resize.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_resize_canary.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_set_range.c" />
+    <ClCompile Include="..\src\ssm_sbuffer_set_range_canary.c" />
+    <ClCompile Include="..\src\ssm_set.c" />
+    <ClCompile Include="..\src\ssm_sstring_import_size.c" />
+    <ClCompile Include="..\src\ssm_sstring_import_size_canary.c" />
+    <ClCompile Include="..\src\ssm_status_string.c" />
+    <ClCompile Include="..\src\ssm_strcat_s.c" />
+    <ClCompile Include="..\src\ssm_strcpy_s.c" />
+    <ClCompile Include="..\src\ssm_strerror_s.c" />
+    <ClCompile Include="..\src\ssm_strncat_s.c" />
+    <ClCompile Include="..\src\ssm_strncpy_s.c" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1AD31049-26B0-4922-89CF-778040DFC51E}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>ssmdll</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="msvc-proj-dll-debug.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="msvc-proj-dll-release.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(RepositoryRootDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SSMDLL_IMPL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(RepositoryRootDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SSMDLL_IMPL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
