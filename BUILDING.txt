@@ -5,10 +5,8 @@ Building the SSM Library
 The SSM library is built in two flavors, a static library (.a on Unix, .lib
 on Windows) and a shared library (.so on Unix, .dll on Windows). The unitary
 tests are based on the CUnit framework. The unitary tests are built and run
-using the two flavors of the SSM library. On Windows, you need to obtain the
-binary installer for CUnit. You can also recompile it from sources, although
-not as straightforward. On Linux, the unitary tests can be run under the
-control of valgrind to track memory leaks.
+using the two flavors of the SSM library. On Linux, the unitary tests can be
+run under the control of valgrind to track memory leaks.
 
 Building all libraries, tests and demos:
 
@@ -25,6 +23,14 @@ Building the documentation (doc/ssm.pdf, doc/ssm.html, doc/ssm.info):
 Running the unitary tests:
 
   make test
+
+  Note: CUnit 2.1-2 or higher is required. On Ubuntu 12.04 LTS, the standard
+  CUnit version is 2.1-0 and the unit tests will not compile. You need to
+  manually install the following packages from Ubuntu 14.04 LTS:
+  libcunit1-ncurses_2.1-2.*.deb and libcunit1-ncurses-dev_2.1-2.*.deb
+
+  Note: On Windows, you need to obtain the binary installer for CUnit. You can
+  also recompile it from the sources, although not as straightforward. 
 
 Running the unitary tests under valgrind control:
 
@@ -52,6 +58,10 @@ Perform code coverage test:
 Run the cppcheck static code analyzer on the source tree:
 
   make cppcheck
+
+Run the flawfinder static code analyzer on the source tree:
+
+  make flawfinder-ssm
 
 Perform all tests that should pass before integrating the current source code:
 

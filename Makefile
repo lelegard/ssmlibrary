@@ -65,10 +65,9 @@ preintegration: \
 	debug \
 	$(if $(shell which cppcheck 2>/dev/null),cppcheck,) \
 	$(if $(shell which flawfinder 2>/dev/null),flawfinder-ssm,) \
-	$(if $(shell which doxygen 2>/dev/null),doxygen,) \
 	test \
 	test-debug \
-	$(if $(shell which valgrind 2>/dev/null),valgrind,) \
+	$(if $(shell which valgrind 2>/dev/null),valgrind-debug,) \
 	$(if $(shell which gcov 2>/dev/null),gcov,)
 
 # Execute flawfinder on SSM library code only.

@@ -229,6 +229,10 @@ static void test_strcat_s (void)
     CU_ASSERT (strcat_s (buf, sizeof(buf), NULL) == SSM_NULLIN);
     CU_ASSERT (memcmp (buf, "\0\0xxxxxx", sizeof(buf)) == 0);
 
+    memcpy(buf, "xxxxxxxx", sizeof(buf));
+    CU_ASSERT (strcat_s (buf, sizeof(buf), "abcdef") == SSM_INDEXRANGE);
+    CU_ASSERT (memcmp (buf, "\0xxxxxxx", sizeof(buf)) == 0);
+
     memcpy(buf, "x\0xxxxxx", sizeof(buf));
     CU_ASSERT (strcat_s (buf, RSIZE_MAX + 1, "abcdef") == SSM_SIZETOOLARGE);
     CU_ASSERT (memcmp (buf, "x\0xxxxxx", sizeof(buf)) == 0);
@@ -236,6 +240,18 @@ static void test_strcat_s (void)
     memcpy(buf, "x\0xxxxxx", sizeof(buf));
     CU_ASSERT (strcat_s (buf, sizeof(buf), "abcd") == SSM_OK);
     CU_ASSERT (memcmp (buf, "xabcd\0xx", sizeof(buf)) == 0);
+
+    memcpy(buf, "x\0xxxxxx", sizeof(buf));
+    CU_ASSERT (strcat_s (buf, sizeof(buf), "abcdef") == SSM_OK);
+    CU_ASSERT (memcmp (buf, "xabcdef\0", sizeof(buf)) == 0);
+
+    memcpy(buf, "x\0xxxxxx", sizeof(buf));
+    CU_ASSERT (strcat_s (buf, sizeof(buf), "abcdefg") == SSM_INDEXRANGE);
+    CU_ASSERT (memcmp (buf, "\0\0xxxxxx", sizeof(buf)) == 0);
+
+    memcpy(buf, "x\0xxxxxx", sizeof(buf));
+    CU_ASSERT (strcat_s (buf, sizeof(buf), "abcdefgh") == SSM_INDEXRANGE);
+    CU_ASSERT (memcmp (buf, "\0\0xxxxxx", sizeof(buf)) == 0);
 }
 
 static void test_strncat_s (void)
@@ -253,6 +269,14 @@ static void test_strncat_s (void)
     CU_ASSERT (memcmp (buf, "\0\0xxxxxx", sizeof(buf)) == 0);
 
     memcpy(buf, "x\0xxxxxx", sizeof(buf));
+    CU_ASSERT (strncat_s (buf, sizeof(buf), "abcd", RSIZE_MAX + 1) == SSM_SIZETOOLARGE);
+    CU_ASSERT (memcmp (buf, "\0\0xxxxxx", sizeof(buf)) == 0);
+
+    memcpy(buf, "xxxxxxxx", sizeof(buf));
+    CU_ASSERT (strncat_s (buf, sizeof(buf), "abcdef", 4) == SSM_INDEXRANGE);
+    CU_ASSERT (memcmp (buf, "\0xxxxxxx", sizeof(buf)) == 0);
+
+    memcpy(buf, "x\0xxxxxx", sizeof(buf));
     CU_ASSERT (strncat_s (buf, RSIZE_MAX + 1, "abcdef", 4) == SSM_SIZETOOLARGE);
     CU_ASSERT (memcmp (buf, "x\0xxxxxx", sizeof(buf)) == 0);
 
@@ -263,6 +287,18 @@ static void test_strncat_s (void)
     memcpy(buf, "x\0xxxxxx", sizeof(buf));
     CU_ASSERT (strncat_s (buf, sizeof(buf), "abcd", 2) == SSM_OK);
     CU_ASSERT (memcmp (buf, "xab\0xxxx", sizeof(buf)) == 0);
+
+    memcpy(buf, "x\0xxxxxx", sizeof(buf));
+    CU_ASSERT (strncat_s (buf, sizeof(buf), "abcdefghijkl", 6) == SSM_OK);
+    CU_ASSERT (memcmp (buf, "xabcdef\0", sizeof(buf)) == 0);
+
+    memcpy(buf, "x\0xxxxxx", sizeof(buf));
+    CU_ASSERT (strncat_s (buf, sizeof(buf), "abcdefghijkl", 7) == SSM_INDEXRANGE);
+    CU_ASSERT (memcmp (buf, "\0\0xxxxxx", sizeof(buf)) == 0);
+
+    memcpy(buf, "x\0xxxxxx", sizeof(buf));
+    CU_ASSERT (strncat_s (buf, sizeof(buf), "abcdefghijkl", 8) == SSM_INDEXRANGE);
+    CU_ASSERT (memcmp (buf, "\0\0xxxxxx", sizeof(buf)) == 0);
 }
 
 static void test_strnlen_s (void)

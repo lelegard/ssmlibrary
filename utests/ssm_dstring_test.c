@@ -558,6 +558,9 @@ static void test_status_string (void)
         default:               CU_ASSERT_STRING_EQUAL (msg, "Unknown"); break;
         }
     }
+
+    CU_ASSERT (ssm_dstring_free(&s) == SSM_OK);
+    CU_ASSERT (ssm_dstring_length(&s) == 0);
 }
 
 /*
