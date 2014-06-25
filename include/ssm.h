@@ -46,7 +46,7 @@
 #define _SSM_H 1
 
 /*
- * If the application wants to use our subset of C11 Annex K, deactive the
+ * If the application wants to use our subset of C11 Annex K, deactivate the
  * corresponding declarations from the standard headers.
  */
 #if defined(SSM_C11K)
@@ -263,7 +263,7 @@ typedef struct {
     _ssm_canary_t _canary;  /* _SSM_CANARY_INIT, then _SSM_CANARY_UPDATE */
 #endif
     size_t _maxSize;        /* Actual size of _data[] (including canaries and trailing null) */
-    size_t _curSize;        /* Currently used size in _data[] (not including caranies and trailing null) */
+    size_t _curSize;        /* Currently used size in _data[] (not including canaries and trailing null) */
     char _data[1];          /* Variable size depending of overloaded buffer */
 } ssm_sbuffer_t;
 
