@@ -59,21 +59,17 @@ doc:
 
 # Perform all tests that should succeed before integrating the current code state.
 .PHONY: preintegration
+FLAWFINDER_SOURCES = include src
 preintegration: \
 	distclean \
 	default \
 	debug \
 	$(if $(shell which cppcheck 2>/dev/null),cppcheck,) \
-	$(if $(shell which flawfinder 2>/dev/null),flawfinder-ssm,) \
+	$(if $(shell which flawfinder 2>/dev/null),flawfinder,) \
 	test \
 	test-debug \
 	$(if $(shell which valgrind 2>/dev/null),valgrind-debug,) \
 	$(if $(shell which gcov 2>/dev/null),gcov,)
-
-# Execute flawfinder on SSM library code only.
-.PHONY: flawfinder-ssm
-flawfinder-ssm:
-	$(FLAWFINDER) $(FLAWFINDER_FLAGS) include src
 
 # Make a tarball of the current source tree
 .PHONY: tarball
