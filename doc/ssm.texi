@@ -117,6 +117,7 @@ Overview
 * Dynamic memory allocation::
 * Using "canary" runtime checks::
 * Supported platforms::
+* Code footprint::
 
 Common mechanisms
 

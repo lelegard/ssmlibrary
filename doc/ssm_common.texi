@@ -14,41 +14,41 @@
 @ssmdef SSM_MAJOR_VERSION
 @cartouche
 @example
-#define SSM_MAJOR_VERSION 1
+#define SSM_MAJOR_VERSION @value{VERSION_MAJOR}
 @end example
 @end cartouche
 
-This macro defines the major version number of the SSM library, 1 in the example.
+This macro defines the major version number of the SSM library, @value{VERSION_MAJOR} in the example.
 
 @ssmdef SSM_MINOR_VERSION
 @cartouche
 @example
-#define SSM_MINOR_VERSION 4
+#define SSM_MINOR_VERSION @value{VERSION_MINOR}
 @end example
 @end cartouche
 
-This macro defines the minor version number of the SSM library, 4 in the example.
+This macro defines the minor version number of the SSM library, @value{VERSION_MINOR} in the example.
 
 @ssmdef SSM_VERSION
 @cartouche
 @example
-#define SSM_VERSION 104
+#define SSM_VERSION @value{VERSION_GLOBAL}
 @end example
 @end cartouche
 
 This macro defines the version number of the SSM library as one single
-integer value equal to @math{100 * @var{major} + @var{minor}}. So version 1.4
-gives 104 in the example.
+integer value equal to @math{100 * @var{major} + @var{minor}}. So version
+@value{VERSION} gives @value{VERSION_GLOBAL} in the example.
 
 @ssmdef SSM_VERSION_STRING
 @cartouche
 @example
-#define SSM_VERSION_STRING "1.4"
+#define SSM_VERSION_STRING "@value{VERSION}"
 @end example
 @end cartouche
 
-This macro defines the version of the SSM library as a string, "1.4" in
-the example.
+This macro defines the version of the SSM library as a string,
+"@value{VERSION}" in the example.
 
 @node Error reporting
 @section Error reporting

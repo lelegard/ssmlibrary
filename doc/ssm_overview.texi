@@ -23,6 +23,7 @@ Project page: @url{http://sourceforge.net/projects/ssmlibrary/}
 * Dynamic memory allocation::
 * Using "canary" runtime checks::
 * Supported platforms::
+* Code footprint::
 @end menu
 
 @node The classical C strings library
@@ -371,3 +372,59 @@ been tested in Loadable Kernel Modules (LKM) on the platform.
 @item     Microsoft Windows 7          @tab Intel x86    @tab gcc 4.8.2 (Cygwin)
 @item     Microsoft Windows 7          @tab Intel x86-64 @tab gcc 4.8.2 (Cygwin)
 @end multitable
+
+@node Code footprint
+@section Code footprint
+
+In embedded systems, there is a usual requirement for a small code footprint.
+The following table summarizes the code footprint in bytes of various usages
+of the SSM library on some standard platforms for the version 1.1 of the SSM
+library.
+
+@multitable {Production only (non-canary)} {ARM v7} {Intel 32} {Intel 64}
+@headitem Feature                  @tab ARM v7 @tab Intel 32 @tab Intel 64
+@item Total code size              @tab   6363 @tab    14948 @tab    13092
+@item Production only (non-canary) @tab   3711 @tab     8356 @tab     7314
+@item Static strings only          @tab   1201 @tab     2912 @tab     2506
+@item Dynamic strings only         @tab   1422 @tab     3768 @tab     3185
+@item Static buffers only          @tab   1113 @tab     2600 @tab     2249
+@item Dynamic buffers only         @tab   1334 @tab     3456 @tab     2928
+@item C11K only, without strerror  @tab    744 @tab     1980 @tab     1657
+@end multitable
+@*
+
+Please note the following points:
+
+@itemize
+@item
+Each value represents the total size of the code, data and BSS segments in bytes.
+@item
+The code was compiled with size optimization in mind. With the default
+optimizations, the code is likely to be larger.
+@item
+All results are produced by GCC. MSVC code size was not checked.
+@item
+Slightly different values may be found with different versions of GCC.
+@item
+The reported values depend on the version of the library and need to be
+updated with the code. Make sure the documentation was correctly updated.
+@item
+The code is compiled as position-independent (@option{-fPIC}) by default to allow
+the creation of shared libraries. It has been observed that the code footprint
+is slightly smaller without this option.
+@item
+The total library code size includes the versions with and without "canary checks",
+which is not used in practice. The first line is consequently not meaningful in
+production environments. All subsequent results include only the "production" code
+(without "canary" checks).
+@item
+The sections about static or dynamic strings or memory buffers list the total
+code size for a given feature. But note that:
+@itemize @minus
+@item
+An application embeds only the code it requires, not all modules.
+@item
+Some features use common code. Using two features usually requires less than
+the sum of the code for the two features.
+@end itemize
+@end itemize

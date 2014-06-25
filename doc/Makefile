@@ -18,6 +18,8 @@
 #  Modification history:
 #    2014-01-06 Thierry Lelegard
 #               Original creation.
+#    2014-06-25 Thierry Lelegard
+#               Added detailed version information in version.texi.
 #
 #-----------------------------------------------------------------------------
 
@@ -46,5 +48,8 @@ version.texi: ../include/ssm.h Makefile
 	@echo >>$@ "@set UPDATED-MONTH $$(date +'%B %Y')"
 	@echo >>$@ "@set EDITION $(SSM_VERSION)"
 	@echo >>$@ "@set VERSION $(SSM_VERSION)"
+	@echo >>$@ "@set VERSION_MAJOR $(SSM_MAJOR_VERSION)"
+	@echo >>$@ "@set VERSION_MINOR $(SSM_MINOR_VERSION)"
+	@echo >>$@ "@set VERSION_GLOBAL $(shell echo $$(((100 * $(SSM_MAJOR_VERSION)) + $(SSM_MINOR_VERSION))))"
 ssm-$(SSM_VERSION).%: ssm.%
 	cp $< $@

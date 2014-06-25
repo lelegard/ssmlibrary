@@ -322,6 +322,8 @@
 #  Modification history:
 #    2014-01-06 Thierry Lelegard
 #               Original creation.
+#    2014-06-25 Thierry Lelegard
+#               Support for texinfo 4.x (5.x options are conditioned).
 #
 #-----------------------------------------------------------------------------
 
@@ -537,8 +539,10 @@ doxygen:
 # Texinfo document generation.
 MAKEINFO ?= makeinfo
 TEXI2DVI ?= texi2dvi
+TEXI_MAJOR_VERSION = $(shell $(MAKEINFO) --version 2>/dev/null | head -1 | sed -e 's/.*  *//' -e 's/\..*//')
+TEXI_V5 = $(shell test "$(TEXI_MAJOR_VERSION)" -ge 5 2>/dev/null && echo true)
 TEXI2PDF_FLAGS  = --batch --quiet --tidy
-TEXI2HTML_FLAGS = --no-split --set-customization-variable AVOID_MENU_REDUNDANCY=true
+TEXI2HTML_FLAGS = --no-split $(if $(TEXI_V5),--set-customization-variable AVOID_MENU_REDUNDANCY=true)
 TEXI2INFO_FLAGS =
 %.pdf: %.texi
 	$(TEXI2DVI) --pdf $(TEXI2PDF_FLAGS) -o $@ $<
