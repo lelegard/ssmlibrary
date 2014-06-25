@@ -108,6 +108,10 @@
 #    Contains additional options for cppcheck. Typically empty since the
 #    usual options are automatically added in this makefile.
 #
+#  CPPCHECK_SOURCES
+#    List of source files or directories on which to run cppcheck.
+#    By default, use the source tree starting at current directory.
+#
 #  DEBUG
 #    If defined (any non-empty value), the debug information is included in
 #    any compilation. Optimizations are turned off.
@@ -139,6 +143,10 @@
 #  FLAWFINDER_FLAGS
 #    Contains additional options for flawfinder. Typically empty since the
 #    usual options are automatically added in this makefile.
+#
+#  FLAWFINDER_SOURCES
+#    List of source files or directories on which to run flawfinder.
+#    By default, use the source tree starting at current directory.
 #
 #  GCOV
 #    If defined (any non-empty value), compile and link with gcov support.
@@ -554,22 +562,24 @@ TEXI2INFO_FLAGS =
 # Static code analysis: Run cppcheck on the source code tree starting at current directory.
 # In debug mode, the diagnostics are more aggressive but may be false positive.
 CPPCHECK ?= cppcheck
+CPPCHECK_SOURCES ?= $(CURDIR)
 CPPCHECK_FLAGS += --inline-suppr --quiet --force \
 	--template="{file}:{line}: ({severity}) {id}: {message}" \
 	--enable=all --suppress=unusedFunction --suppress=missingIncludeSystem \
 	$(if $(DEBUG),--inconclusive,)
 .PHONY: cppcheck cppcheck-xml
 cppcheck:
-	$(CPPCHECK) $(CPPCHECK_FLAGS) .
+	$(CPPCHECK) $(CPPCHECK_FLAGS) $(CPPCHECK_SOURCES)
 cppcheck-xml:
-	$(CPPCHECK) $(CPPCHECK_FLAGS) --xml --xml-version=2 .
+	$(CPPCHECK) $(CPPCHECK_FLAGS) --xml --xml-version=2 $(CPPCHECK_SOURCES)
 
 # Static code analysis: Run flawfinder on the source code tree starting at current directory.
 FLAWFINDER ?= flawfinder
+FLAWFINDER_SOURCES ?= $(CURDIR)
 FLAWFINDER_FLAGS += --quiet --dataonly
 .PHONY: flawfinder
 flawfinder:
-	$(FLAWFINDER) $(FLAWFINDER_FLAGS) $(CURDIR)
+	$(FLAWFINDER) $(FLAWFINDER_FLAGS) $(FLAWFINDER_SOURCES)
 
 # Utilities: display predefined macros for C and C++
 .PHONY: cmacros cxxmacros
