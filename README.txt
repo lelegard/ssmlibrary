@@ -15,7 +15,7 @@ List of subdirectories:
 License:
 
   The SSM library is distributed under the terms of the GNU Lesser General
-  Public License version 3. See file COPYING.txt.
+  Public License version 2.1. See file COPYING.txt.
 
 Build:
 

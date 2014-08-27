@@ -3,7 +3,7 @@
 
 The SSM library provides safe functions for handling strings and memory buffers in C.
 
-This software is distributed under the terms of the GNU Lesser General Public License version 3.
+This software is distributed under the terms of the GNU Lesser General Public License (LGPL) version 2.1.
 
 Its source code and documentation are available online:
 
