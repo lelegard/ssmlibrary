@@ -247,11 +247,19 @@
 #  CXXFLAGS
 #    Options which are applied to C++ compilations.
 #
+#  EXECS
+#    All executable files to build, based on the list of main programs from
+#    $(MODULES_MAIN).
+#
 #  FLAWFINDER_FLAGS
 #    Same as input variables with additional usual options.
 #
 #  GCC_VERSION
 #    Contain the current GCC version, usually in form x.y.z
+#
+#  HEADERS
+#    List of all header names, that is to say the list of all "f" for which
+#    a source file f.h exists.
 #
 #  LDFLAGS
 #    Options which are applied to the linker.
@@ -274,6 +282,16 @@
 #    List of all modules names, that is to say the list of all "f" for which
 #    a source file f.c or f.cpp exists.
 #
+#  MODULES_LIB
+#    List of all modules names which are not main programs, that is to say the
+#    list of all "f" for which a source file f.c or f.cpp exists and a source
+#    file f.h exists.
+#
+#  MODULES_MAIN
+#    List of all modules names which are main programs, that is to say the list
+#    of all "f" for which a source file f.c or f.cpp exists but no file f.h
+#    exists.
+#
 #  NORECURSE_SUBDIRS
 #    List of subdirectories patterns to ignore in make recursion. The parent
 #    makefile may append local subdirectories to this variable.
@@ -289,6 +307,14 @@
 #
 #  OBJS
 #    All object files (.o) to build, for all C/C++ source files.
+#
+#  OBJS_LIB
+#    All object files (.o) to build which are not main programs, ie. for all
+#    $(MODULES_LIB). These object files will typically go into a library.
+#
+#  OBJS_MAIN
+#    All object files (.o) to build which are main programs, ie. for all
+#    $(MODULES_MAIN).
 #
 #  RECURSE
 #    A shell command which applies the current make target to all or some
@@ -468,9 +494,15 @@ else
 endif
 
 # Source and object files in current directory.
-SOURCES := $(notdir $(wildcard *.c *.cpp))
-MODULES := $(basename $(SOURCES))
-OBJS    := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES)))
+SOURCES      := $(notdir $(wildcard *.c *.cpp))
+HEADERS      := $(notdir $(basename $(wildcard *.h)))
+MODULES      := $(basename $(SOURCES))
+OBJS         := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES)))
+MODULES_MAIN := $(sort $(filter-out $(HEADERS),$(MODULES)))
+MODULES_LIB  := $(sort $(filter-out $(MODULES_MAIN),$(MODULES)))
+OBJS_MAIN    := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_MAIN)))
+OBJS_LIB     := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_LIB)))
+EXECS        := $(addprefix $(OBJDIR)/,$(MODULES_MAIN))
 
 # Compilation rules
 $(OBJDIR)/%.o: %.c
@@ -621,12 +653,14 @@ listvars:
 	@echo 'DONT_BUILD_DEPS ..... = $(DONT_BUILD_DEPS)'
 	@echo 'DOXYGEN ............. = $(DOXYGEN)'
 	@echo 'DOXYGEN_FLAGS ....... = $(DOXYGEN_FLAGS)'
+	@echo 'EXECS ............... = $(EXECS)'
 	@echo 'EXTRA_CLEAN ......... = $(EXTRA_CLEAN)'
 	@echo 'EXTRA_DISTCLEAN ..... = $(EXTRA_DISTCLEAN)'
 	@echo 'FLAWFINDER .......... = $(FLAWFINDER)'
 	@echo 'FLAWFINDER_FLAGS .... = $(FLAWFINDER_FLAGS)'
 	@echo 'GCC_VERSION ......... = $(GCC_VERSION)'
 	@echo 'GCOV ................ = $(GCOV)'
+	@echo 'HEADERS ............. = $(HEADERS)'
 	@echo 'LD_LIBRARY_PATH_NAME  = $(LD_LIBRARY_PATH_NAME)'
 	@echo 'LDCXX ............... = $(LDCXX)'
 	@echo 'LDFLAGS ............. = $(LDFLAGS)'
@@ -637,10 +671,14 @@ listvars:
 	@echo 'MAIN_ARCH ........... = $(MAIN_ARCH)'
 	@echo 'MAKEFLAGS ........... = $(MAKEFLAGS)'
 	@echo 'MODULES ............. = $(MODULES)'
+	@echo 'MODULES_MAIN ........ = $(MODULES_MAIN)'
+	@echo 'MODULES_LIB ......... = $(MODULES_LIB)'
 	@echo 'NODEPS .............. = $(NODEPS)'
 	@echo 'NORECURSE_SUBDIRS ... = $(NORECURSE_SUBDIRS)'
 	@echo 'OBJDIR .............. = $(OBJDIR)'
 	@echo 'OBJS ................ = $(OBJS)'
+	@echo 'OBJS_MAIN ........... = $(OBJS_MAIN)'
+	@echo 'OBJS_LIB ............ = $(OBJS_LIB)'
 	@echo 'PATH ................ = $(PATH)'
 	@echo 'RECURSE ............. = $(RECURSE)'
 	@echo 'RECURSE_ORDER ....... = $(RECURSE_ORDER)'
