@@ -20,4 +20,5 @@
 *.suo
 *.opensdf
 *.vcxproj.user
+.vs
 ipch

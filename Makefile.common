@@ -557,7 +557,7 @@ clean:
 distclean: clean
 	@echo '  [DISTCLEAN] $(CURDIR)'; \
 	rm -rf $(EXTRA_DISTCLEAN) [Dd]ebug* [Rr]elease* ipch *.exe *.so .kdbgrc.* *.t2d \
-	    *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
+	    .vs *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
 	    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
 	    .tmp_versions
 	+@$(RECURSE)

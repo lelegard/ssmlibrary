@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\utests\main.c" />
+    <ClCompile Include="..\utests\ssm_c11k_test.c" />
+    <ClCompile Include="..\utests\ssm_memory_compare_test.c" />
+    <ClCompile Include="..\utests\ssm_memory_set_test.c" />
+    <ClCompile Include="..\utests\ssm_platform_test.c" />
+    <ClCompile Include="..\utests\ssm_cstring_test.c" />
+    <ClCompile Include="..\utests\ssm_dbuffer_canary_test.c" />
+    <ClCompile Include="..\utests\ssm_dbuffer_test.c" />
+    <ClCompile Include="..\utests\ssm_dstring_canary_test.c" />
+    <ClCompile Include="..\utests\ssm_dstring_test.c" />
+    <ClCompile Include="..\utests\ssm_memory_copy_test.c" />
+    <ClCompile Include="..\utests\ssm_memory_management_canary_test.c" />
+    <ClCompile Include="..\utests\ssm_memory_management_test.c" />
+    <ClCompile Include="..\utests\ssm_sbuffer_canary_test.c" />
+    <ClCompile Include="..\utests\ssm_sbuffer_test.c" />
+    <ClCompile Include="..\utests\ssm_sstring_canary_test.c" />
+    <ClCompile Include="..\utests\ssm_sstring_test.c" />
+    <ClCompile Include="..\utests\ssm_status_test.c" />
+    <ClCompile Include="..\utests\utests.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\utests\ssm_c11k_test.h" />
+    <ClInclude Include="..\utests\ssm_memory_compare_test.h" />
+    <ClInclude Include="..\utests\ssm_memory_set_test.h" />
+    <ClInclude Include="..\utests\ssm_platform_test.h" />
+    <ClInclude Include="..\utests\ssm_cstring_test.h" />
+    <ClInclude Include="..\utests\ssm_dbuffer_canary_test.h" />
+    <ClInclude Include="..\utests\ssm_dbuffer_test.h" />
+    <ClInclude Include="..\utests\ssm_dstring_canary_test.h" />
+    <ClInclude Include="..\utests\ssm_dstring_test.h" />
+    <ClInclude Include="..\utests\ssm_memory_copy_test.h" />
+    <ClInclude Include="..\utests\ssm_memory_management_canary_test.h" />
+    <ClInclude Include="..\utests\ssm_memory_management_test.h" />
+    <ClInclude Include="..\utests\ssm_sbuffer_canary_test.h" />
+    <ClInclude Include="..\utests\ssm_sbuffer_test.h" />
+    <ClInclude Include="..\utests\ssm_sstring_canary_test.h" />
+    <ClInclude Include="..\utests\ssm_sstring_test.h" />
+    <ClInclude Include="..\utests\ssm_status_test.h" />
+    <ClInclude Include="..\utests\utests.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2FFD7D6C-F3BF-4ED6-8593-20AC70A83AC1}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>utests-ssmlib</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="msvc-use-ssmlib.props" />
+    <Import Project="$(CUnitRoot)\CUnit.props" />
+    <Import Project="msvc-proj-exe-debug.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="msvc-use-ssmlib.props" />
+    <Import Project="$(CUnitRoot)\CUnit.props" />
+    <Import Project="msvc-proj-exe-release.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
