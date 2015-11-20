@@ -29,9 +29,6 @@ Running the unitary tests:
   manually install the following packages from Ubuntu 14.04 LTS:
   libcunit1-ncurses_2.1-2.*.deb and libcunit1-ncurses-dev_2.1-2.*.deb
 
-  Note: On Windows, you need to obtain the binary installer for CUnit. You can
-  also recompile it from the sources, although not as straightforward. 
-
 Running the unitary tests under valgrind control:
 
   make valgrind
@@ -83,17 +80,27 @@ Building a tarball of the sources in parent directory:
 
   make tarball
 
-Building all libraries, tests and demos on Windows using Visual C++ 2010:
+Building all libraries, tests and demos on Windows using Visual C++ 2015:
 
-  Open solution "ssm" (double-click on msvc2010\ssm.sln from Windows Explorer).
-  Select "Debug" or "Release" configuration, then press F7. This has been
-  tested with the Microsoft Visual C++ 2010 Express Edition only.
+  Open solution "ssm" (double-click on msvc2015\ssm.sln from Windows Explorer).
+  Select "Debug" or "Release" configuration, select "Win32" or "x64" platform,
+  then press F7. This has been tested with the Microsoft Visual Studio 2015
+  Express Edition only.
+
+  To build the unitary tests, you need to obtain the binary installer for
+  CUnit static libraries from https://sourceforge.net/projects/cunit-msvc/
 
 Building all libraries, tests and demos on Windows using Visual C++ 2013:
 
   Open solution "ssm" (double-click on msvc2013\ssm.sln from Windows Explorer).
   Select "Debug" or "Release" configuration, then press F7. This has been
   tested with Microsoft Visual Studio Express 2013 for Windows Desktop only.
+
+Building all libraries, tests and demos on Windows using Visual C++ 2010:
+
+  Open solution "ssm" (double-click on msvc2010\ssm.sln from Windows Explorer).
+  Select "Debug" or "Release" configuration, then press F7. This has been
+  tested with the Microsoft Visual C++ 2010 Express Edition only.
 
 Specifying preprocessing macros for alternate code generations:
 

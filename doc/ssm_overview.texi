@@ -369,6 +369,8 @@ been tested in Loadable Kernel Modules (LKM) on the platform.
 @item     Linaro 12.05                 @tab ARM v7       @tab gcc 4.6.3 @tab
 @item     Microsoft Windows 7          @tab Intel x86    @tab Visual C++ 2010 Express
 @item     Microsoft Windows 7          @tab Intel x86    @tab Visual C++ 2013 Express
+@item     Microsoft Windows 7          @tab Intel x86    @tab Visual C++ 2015 Express
+@item     Microsoft Windows 7          @tab Intel x86-64 @tab Visual C++ 2015 Express
 @item     Microsoft Windows 7          @tab Intel x86    @tab gcc 4.8.2 (Cygwin)
 @item     Microsoft Windows 7          @tab Intel x86-64 @tab gcc 4.8.2 (Cygwin)
 @end multitable
