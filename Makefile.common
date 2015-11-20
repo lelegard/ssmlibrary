@@ -394,7 +394,7 @@ ROOTDIR := $(shell cd $(patsubst %/,%,$(dir $(word $(words $(MAKEFILE_LIST)),$(M
 SUBDIRS := $(sort $(patsubst ./%,%,$(shell find . -noleaf -mindepth 1 -maxdepth 1 -type d ! -name '.*')))
 
 # List of subdirectories to ignore in make recursion.
-NORECURSE_SUBDIRS = debug release debug-% release-% Debug Release ipch %.t2d
+NORECURSE_SUBDIRS = debug release debug-% release-% Debug Release .vs ipch %.t2d .git
 
 # Actual recurse order. If the user did not define RECURSE_ORDER, use all
 # subdirectories, except those for which we know there is nothing to make.
@@ -567,7 +567,7 @@ NOSOURCE = \
     .git *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* doxy doxygen *.pdf *.t2d \
     *.o *.so *.ko *.a *.lib *.exe *.gcov *.dep .kdbgrc.* .tmp_versions \
     *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
-    ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
+    .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
     *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk
 
 # Source code documentation generation.

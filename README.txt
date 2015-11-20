@@ -9,8 +9,9 @@ List of subdirectories:
   src ....... Source code of the library.
   utests .... Unitary tests (requires CUnit 2.1-2 or higher).
   demos ..... Demo applications.
-  msvc2010 .. Project files for building the library, tests and demos
-  msvc2013 .. on Windows using Microsoft Visual C++ 2010 and 2013.
+  msvc2010 .. Project files for Microsoft Visual C++ 2010.
+  msvc2013 .. Project files for Microsoft Visual C++ 2013.
+  msvc2015 .. Project files for Microsoft Visual C++ 2015.
 
 License:
 
