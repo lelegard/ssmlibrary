@@ -76,6 +76,10 @@
 #  listvars:
 #    Display a few make variables for debug purposes.
 #
+#  m32:
+#    Build the default target of the current directory for 32-bit target
+#    (see input variable M32).
+#
 #  optsize:
 #    Alternate target to recompile with optimizations for reduced code size.
 #
@@ -154,7 +158,16 @@
 #
 #  LDCXX
 #    Must be defined to a non-empty value to include the C++ libraries in
-#    the link commands.
+#    the link commands. Automatically defined if any C++ source file (*.cpp)
+#    is present. Define it explicitly if you need the C++ libraries without
+#    C++ source files in the make working directory.
+#
+#  M32
+#    If defined (any non-empty value), compile for 32-bit target when running
+#    in 64-bit host. More precisely, on a x86-84 host platform, generate code
+#    for i686 target (cross-compilation). Requirement:
+#    - Ubuntu: apt-get install gcc-multilib g++-multilib
+#    - Fedora: dnf install glibc-devel.i686 libstdc++-devel.i686
 #
 #  MAKEINFO
 #    Contains the absolute path of the makeinfo utility (part of Texinfo).
@@ -407,7 +420,6 @@ RECURSE = for dir in $(RECURSE_SUBDIRS); do [[ -d $$dir ]] && $(MAKE) -C $$dir $
 # Operating system, architecture, core count.
 LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
 LOCAL_ARCH := $(shell uname -m)
-MAIN_ARCH  := $(shell uname -m | sed -e 's/i.86/i386/' -e 's/arm.*/arm/')
 CPU_COUNT  := $(shell nproc 2>/dev/null)
 CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
 CORE_COUNT := $(shell fgrep -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
@@ -415,6 +427,13 @@ CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
 
 # Get current GCC version, usually in form x.y.z
 GCC_VERSION := $(word 3,$(shell gcc -v 2>&1 | grep '^gcc version'))
+
+# When C++ source files are present, automatically define LDCXX.
+ifndef LDCXX
+    ifneq ($(wildcard *.cpp),)
+        LDCXX = true
+    endif
+endif
 
 # Detect Cygwin platform. Impacts:
 # - The executables are started by the Windows loader which uses distinct environment
@@ -430,10 +449,29 @@ else
     CFLAGS_FPIC := -fPIC
 endif
 
+# Define compilation flags for 32-bit cross-compilation.
+# Target architecture is skipped on ARM because of numerous variants.
+ifdef M32
+    MAIN_ARCH    = i386
+    CFLAGS_M32   = -m32
+    LDFLAGS_M32  = -m32
+    TARGET_ARCH  = -march=i686
+else
+    MAIN_ARCH    = $(shell uname -m | sed -e 's/i.86/i386/' -e 's/arm.*/arm/')
+    CFLAGS_M32   =
+    LDFLAGS_M32  =
+    TARGET_ARCH  ?= $(if $(subst arm,,$(MAIN_ARCH)),-march=$(LOCAL_ARCH:x86_64=x86-64),)
+endif
+
 # Alternate target to recompile with debug options
 .PHONY: debug
 debug:
 	+@$(MAKE) DEBUG=true
+
+# Alternate target to recompile for 32-bit target
+.PHONY: m32
+m32:
+	+@$(MAKE) M32=true
 
 # Compilation flags for various types of optimization.
 CFLAGS_OPTIMIZE ?= -O2 -fno-strict-aliasing
@@ -470,9 +508,6 @@ else
     LDFLAGS_GCOV =
 endif
 
-# Target architecture option. Skip it on ARM because of numerous variants.
-TARGET_ARCH ?= $(if $(subst arm,,$(MAIN_ARCH)),-march=$(LOCAL_ARCH:x86_64=x86-64),)
-
 # External libraries
 ifdef LDCXX
     LDLIBS += -lstdc++
@@ -481,9 +516,9 @@ LDLIBS += -lpthread -lrt -lm
 
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using *FLAGS_EXTRA.
-CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) -std=c99 $(CFLAGS_EXTRA)
-CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
-LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_EXTRA)
+CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) -std=c99 $(CFLAGS_EXTRA)
+CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
+LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc $(ARFLAGS_EXTRA)
 
 # Output subdirectories in each project directory
@@ -503,6 +538,9 @@ MODULES_LIB  := $(sort $(filter-out $(MODULES_MAIN),$(MODULES)))
 OBJS_MAIN    := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_MAIN)))
 OBJS_LIB     := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_LIB)))
 EXECS        := $(addprefix $(OBJDIR)/,$(MODULES_MAIN))
+
+# Keep intermediate files, avoid using "ar" again.
+.SECONDARY:
 
 # Compilation rules
 $(OBJDIR)/%.o: %.c
@@ -535,14 +573,14 @@ $(OBJDIR)/%.dep: %.cpp
 	rm -f $@
 
 # Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
-NODEPS += clean cmacros cppcheck cppcheck-xml cxxmacros debug distclean doxygen flawfinder listvars unixify
+NODEPS += clean cmacros cppcheck cppcheck-xml cxxmacros debug m32 distclean doxygen flawfinder listvars unixify
 ifeq ($(DONT_BUILD_DEPS),)
     ifneq ($(MAKECMDGOALS),)
         DONT_BUILD_DEPS := $(if $(filter-out $(NODEPS),$(MAKECMDGOALS)),,true)
     endif
 endif
 ifeq ($(DONT_BUILD_DEPS),)
-    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(wildcard *.c)))))
+    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(wildcard *.c *.cpp)))))
 endif
 
 # Cleanup utilities
