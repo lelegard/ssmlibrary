@@ -2,7 +2,7 @@
 
 The problems of the unsafe C string functions such as the infamous
 `strcpy()` and `strcat()` are well-known, causing buffer overflows
-and leading to multiplesecurity vulnerabilities. The SSM library is
+and leading to multiple security vulnerabilities. The SSM library is
 a safe and reliable alternative the old C string library.
 
 | Subdirectory | Content |
