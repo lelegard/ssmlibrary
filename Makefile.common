@@ -607,6 +607,7 @@ distclean: clean
 	rm -rf $(EXTRA_DISTCLEAN) [Dd]ebug* [Rr]elease* ipch *.exe *.so .kdbgrc.* *.t2d \
 	    .vs *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
 	    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
+	    *.VC.db *.VC.opendb \
 	    *.pro.user *.pro.user.* .tmp_versions
 	+@$(RECURSE)
 
