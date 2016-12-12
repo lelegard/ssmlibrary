@@ -260,6 +260,9 @@
 #  CXXFLAGS
 #    Options which are applied to C++ compilations.
 #
+#  EXE_SUFFIX
+#    Executable files suffix, ".exe" on Windows, nothing otherwise.
+#
 #  EXECS
 #    All executable files to build, based on the list of main programs from
 #    $(MODULES_MAIN).
@@ -415,7 +418,7 @@ RECURSE_SUBDIRS = $(filter-out $(NORECURSE_SUBDIRS),$(if $(RECURSE_ORDER),$(RECU
 
 # $(RECURSE) is a shell command which recurses the current
 # make targets in the subdirectories (useful for "all" or "clean").
-RECURSE = for dir in $(RECURSE_SUBDIRS); do [[ -d $$dir ]] && $(MAKE) -C $$dir $@ || $(if $(CONTINUE),continue,break); done
+RECURSE = for dir in $(RECURSE_SUBDIRS); do if [[ -d $$dir ]]; then $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| break); fi; done
 
 # Operating system, architecture, core count.
 LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
@@ -447,6 +450,13 @@ ifneq ($(subst cygwin,,$(LOCAL_OS)),$(LOCAL_OS))
 else
     LD_LIBRARY_PATH_NAME := LD_LIBRARY_PATH
     CFLAGS_FPIC := -fPIC
+endif
+
+# Executable files suffix
+ifeq ($(LOCAL_OS),cygwin)
+    EXE_SUFFIX := .exe
+else
+    EXE_SUFFIX := 
 endif
 
 # Define compilation flags for 32-bit cross-compilation.
@@ -597,7 +607,8 @@ distclean: clean
 	rm -rf $(EXTRA_DISTCLEAN) [Dd]ebug* [Rr]elease* ipch *.exe *.so .kdbgrc.* *.t2d \
 	    .vs *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
 	    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
-	    .tmp_versions
+	    *.VC.db *.VC.opendb \
+	    *.pro.user *.pro.user.* .tmp_versions
 	+@$(RECURSE)
 
 # List of file and directory patterns for non-source files.
@@ -691,6 +702,7 @@ listvars:
 	@echo 'DONT_BUILD_DEPS ..... = $(DONT_BUILD_DEPS)'
 	@echo 'DOXYGEN ............. = $(DOXYGEN)'
 	@echo 'DOXYGEN_FLAGS ....... = $(DOXYGEN_FLAGS)'
+	@echo 'EXE_SUFFIX .......... = $(EXE_SUFFIX)'
 	@echo 'EXECS ............... = $(EXECS)'
 	@echo 'EXTRA_CLEAN ......... = $(EXTRA_CLEAN)'
 	@echo 'EXTRA_DISTCLEAN ..... = $(EXTRA_DISTCLEAN)'
