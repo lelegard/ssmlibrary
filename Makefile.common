@@ -1,13 +1,28 @@
 #-----------------------------------------------------------------------------
 #
-#  Copyright (c) 2014, Thierry Lelegard
+#  Copyright (c) 2005-2017, Thierry Lelegard
+#  All rights reserved.
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License, or (at your option) any later version.
-#  See the file COPYING.txt included with this distribution for more
-#  information.
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+#
+#  1. Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+#  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
 #
@@ -74,7 +89,7 @@
 #    at the current directory.
 #
 #  listvars:
-#    Display a few make variables for debug purposes.
+#    Display make variables for debug purposes.
 #
 #  m32:
 #    Build the default target of the current directory for 32-bit target
@@ -103,6 +118,14 @@
 #  CFLAGS_OPTIMIZE
 #    Contains specific optimization for the gcc compiler. Defaults to -O2.
 #    Ignored if DEBUG is defined.
+#
+#  CVPATH
+#    Contains directories where *.h and *.c files are searched. "vpath"
+#    directives are defined accordingly.
+#
+#  CXXVPATH
+#    Contains directories where *.h and *.cpp files are searched. "vpath"
+#    directives are defined accordingly.
 #
 #  CPPCHECK
 #    Contains the absolute path of the cppcheck static code analyzer.
@@ -368,14 +391,6 @@
 #    Texi2dvi flags used in .texi to .pdf transformation.
 #
 #-----------------------------------------------------------------------------
-#
-#  Modification history:
-#    2014-01-06 Thierry Lelegard
-#               Original creation.
-#    2014-06-25 Thierry Lelegard
-#               Support for texinfo 4.x (5.x options are conditioned).
-#
-#-----------------------------------------------------------------------------
 
 # If no target precedes the inclusion of this file, use "default" as target.
 .PHONY: first default
@@ -404,13 +419,13 @@ else
 endif
 
 # The directory which contains the currently included Makefile is the project root.
-ROOTDIR := $(shell cd $(patsubst %/,%,$(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))); pwd)
+ROOTDIR := $(shell cd $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))); pwd)
 
 # List of subdirectories in the current directory.
 SUBDIRS := $(sort $(patsubst ./%,%,$(shell find . -noleaf -mindepth 1 -maxdepth 1 -type d ! -name '.*')))
 
 # List of subdirectories to ignore in make recursion.
-NORECURSE_SUBDIRS = debug release debug-% release-% Debug Release .vs ipch %.t2d .git
+NORECURSE_SUBDIRS = debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git
 
 # Actual recurse order. If the user did not define RECURSE_ORDER, use all
 # subdirectories, except those for which we know there is nothing to make.
@@ -456,7 +471,7 @@ endif
 ifeq ($(LOCAL_OS),cygwin)
     EXE_SUFFIX := .exe
 else
-    EXE_SUFFIX := 
+    EXE_SUFFIX :=
 endif
 
 # Define compilation flags for 32-bit cross-compilation.
@@ -529,7 +544,7 @@ LDLIBS += -lpthread -lrt -lm
 CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) -std=c99 $(CFLAGS_EXTRA)
 CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
 LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_EXTRA)
-ARFLAGS  = rc $(ARFLAGS_EXTRA)
+ARFLAGS  = rcU $(ARFLAGS_EXTRA)
 
 # Output subdirectories in each project directory
 ifdef DEBUG
@@ -538,9 +553,20 @@ else
     OBJDIR = release-$(MAIN_ARCH)
 endif
 
+# Implicit search directives.
+ifneq ($(CVPATH),)
+    vpath %.c $(CVPATH)
+endif
+ifneq ($(CXXVPATH),)
+    vpath %.cpp $(CXXVPATH)
+endif
+ifneq ($(CVPATH)$(CXXVPATH),)
+    vpath %.h $(CVPATH) $(CXXVPATH)
+endif
+
 # Source and object files in current directory.
-SOURCES      := $(notdir $(wildcard *.c *.cpp))
-HEADERS      := $(notdir $(basename $(wildcard *.h)))
+SOURCES      := $(notdir $(wildcard *.c *.cpp $(addsuffix /*.c,$(CVPATH)) $(addsuffix /*.cpp,$(CXXVPATH))))
+HEADERS      := $(notdir $(basename $(wildcard *.h $(addsuffix /*.h,$(CVPATH) $(CXXVPATH)))))
 MODULES      := $(basename $(SOURCES))
 OBJS         := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES)))
 MODULES_MAIN := $(sort $(filter-out $(HEADERS),$(MODULES)))
@@ -567,6 +593,9 @@ $(OBJDIR)/%.o: %.cpp
 $(OBJDIR)/%: $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+$(OBJDIR)/%.so: $(OBJDIR)/%.o
+	@echo '  [CC] $@'; \
+	$(CC) $(CFLAGS) $^ $(LDLIBS) -shared -o $@
 
 # Object files dependencies (.dep files, included by makefiles)
 $(OBJDIR)/%.dep: %.c
@@ -680,61 +709,10 @@ unixify:
 	  dos2unix -q $$f; \
 	done
 
-# Display a few make variables for debug purposes
+# Display make variables for debug purposes.
 .PHONY: listvars
 listvars:
-	@echo 'ARFLAGS ............. = $(ARFLAGS)'
-	@echo 'CFLAGS .............. = $(CFLAGS)'
-	@echo 'CFLAGS_INCLUDES ..... = $(CFLAGS_INCLUDES)'
-	@echo 'CFLAGS_OPTIMIZE ..... = $(CFLAGS_OPTIMIZE)'
-	@echo 'CFLAGS_FULLSPEED .... = $(CFLAGS_FULLSPEED)'
-	@echo 'CFLAGS_OPTSIZE ...... = $(CFLAGS_OPTSIZE)'
-	@echo 'COMMA ............... = $(COMMA)'
-	@echo 'CONTINUE ............ = $(CONTINUE)'
-	@echo 'CORE_COUNT .......... = $(CORE_COUNT)'
-	@echo 'CPPCHECK ............ = $(CPPCHECK)'
-	@echo 'CPPCHECK_FLAGS ...... = $(CPPCHECK_FLAGS)'
-	@echo 'CPPFLAGS ............ = $(CPPFLAGS)'
-	@echo 'CPU_COUNT ........... = $(CPU_COUNT)'
-	@echo 'CXXFLAGS ............ = $(CXXFLAGS)'
-	@echo 'CXXFLAGS_INCLUDES ... = $(CXXFLAGS_INCLUDES)'
-	@echo 'DEBUG ............... = $(DEBUG)'
-	@echo 'DONT_BUILD_DEPS ..... = $(DONT_BUILD_DEPS)'
-	@echo 'DOXYGEN ............. = $(DOXYGEN)'
-	@echo 'DOXYGEN_FLAGS ....... = $(DOXYGEN_FLAGS)'
-	@echo 'EXE_SUFFIX .......... = $(EXE_SUFFIX)'
-	@echo 'EXECS ............... = $(EXECS)'
-	@echo 'EXTRA_CLEAN ......... = $(EXTRA_CLEAN)'
-	@echo 'EXTRA_DISTCLEAN ..... = $(EXTRA_DISTCLEAN)'
-	@echo 'FLAWFINDER .......... = $(FLAWFINDER)'
-	@echo 'FLAWFINDER_FLAGS .... = $(FLAWFINDER_FLAGS)'
-	@echo 'GCC_VERSION ......... = $(GCC_VERSION)'
-	@echo 'GCOV ................ = $(GCOV)'
-	@echo 'HEADERS ............. = $(HEADERS)'
-	@echo 'LD_LIBRARY_PATH_NAME  = $(LD_LIBRARY_PATH_NAME)'
-	@echo 'LDCXX ............... = $(LDCXX)'
-	@echo 'LDFLAGS ............. = $(LDFLAGS)'
-	@echo 'LDLIBS .............. = $(LDLIBS)'
-	@echo 'LOADLIBES ........... = $(LOADLIBES)'
-	@echo 'LOCAL_ARCH .......... = $(LOCAL_ARCH)'
-	@echo 'LOCAL_OS ............ = $(LOCAL_OS)'
-	@echo 'MAIN_ARCH ........... = $(MAIN_ARCH)'
-	@echo 'MAKEFLAGS ........... = $(MAKEFLAGS)'
-	@echo 'MODULES ............. = $(MODULES)'
-	@echo 'MODULES_MAIN ........ = $(MODULES_MAIN)'
-	@echo 'MODULES_LIB ......... = $(MODULES_LIB)'
-	@echo 'NODEPS .............. = $(NODEPS)'
-	@echo 'NORECURSE_SUBDIRS ... = $(NORECURSE_SUBDIRS)'
-	@echo 'OBJDIR .............. = $(OBJDIR)'
-	@echo 'OBJS ................ = $(OBJS)'
-	@echo 'OBJS_MAIN ........... = $(OBJS_MAIN)'
-	@echo 'OBJS_LIB ............ = $(OBJS_LIB)'
-	@echo 'PATH ................ = $(PATH)'
-	@echo 'RECURSE ............. = $(RECURSE)'
-	@echo 'RECURSE_ORDER ....... = $(RECURSE_ORDER)'
-	@echo 'RECURSE_SUBDIRS ..... = $(RECURSE_SUBDIRS)'
-	@echo 'ROOTDIR ............. = $(ROOTDIR)'
-	@echo 'SOURCES ............. = $(SOURCES)'
-	@echo 'SPACE ............... = "$(SPACE)"'
-	@echo 'SUBDIRS ............. = $(SUBDIRS)'
-	@echo 'TARGET_ARCH ......... = $(TARGET_ARCH)'
+	@true
+	$(foreach v, \
+	  $(sort $(filter-out .% ^% @% _% *% \%% <% +% ?% BASH% LS_COLORS SSH% VTE% XDG%,$(.VARIABLES))), \
+	  $(info $(v) = "$($(v))"))
