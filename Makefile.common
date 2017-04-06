@@ -565,8 +565,8 @@ ifneq ($(CVPATH)$(CXXVPATH),)
 endif
 
 # Source and object files in current directory.
-SOURCES      := $(notdir $(wildcard *.c *.cpp $(addsuffix /*.c,$(CVPATH)) $(addsuffix /*.cpp,$(CXXVPATH))))
-HEADERS      := $(notdir $(basename $(wildcard *.h $(addsuffix /*.h,$(CVPATH) $(CXXVPATH)))))
+SOURCES      := $(sort $(notdir $(wildcard *.c *.cpp $(addsuffix /*.c,$(CVPATH)) $(addsuffix /*.cpp,$(CXXVPATH)))))
+HEADERS      := $(sort $(notdir $(basename $(wildcard *.h $(addsuffix /*.h,$(CVPATH) $(CXXVPATH))))))
 MODULES      := $(basename $(SOURCES))
 OBJS         := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES)))
 MODULES_MAIN := $(sort $(filter-out $(HEADERS),$(MODULES)))
